@@ -1,0 +1,203 @@
+name: Discord Notification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  
+  issues:
+    types: [opened, closed]
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  
+      
+      - name: Get commit info
+        id: commit_info
+        run: |
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B | head -n 1)
+          COMMIT_AUTHOR=$(git log -1 --pretty=format:'%an')
+          COMMIT_EMAIL=$(git log -1 --pretty=format:'%ae')
+          COMMIT_TIME=$(git log -1 --pretty=format:'%ci')
+          
+          echo "message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+          echo "author=$COMMIT_AUTHOR" >> $GITHUB_OUTPUT
+          echo "email=$COMMIT_EMAIL" >> $GITHUB_OUTPUT
+          echo "time=$COMMIT_TIME" >> $GITHUB_OUTPUT
+      
+      - name: Send Discord Notification for Push
+        if: github.event_name == 'push'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          REPO_URL="https://github.com/${{ github.repository }}"
+          
+          curl -H "Content-Type: application/json" \
+               -d "{
+                 \"embeds\": [{
+                   \"title\": \"New Push to ${{ github.repository }}\",
+                   \"description\": \"**${{ steps.commit_info.outputs.message }}**\",
+                   \"color\": 9807270,
+                   \"fields\": [
+                     {
+                       \"name\": \"Branch\",
+                       \"value\": \"\`${{ github.ref_name }}\`\",
+                       \"inline\": true
+                     },
+                     {
+                       \"name\": \"Author\",
+                       \"value\": \"${{ steps.commit_info.outputs.author }}\",
+                       \"inline\": true
+                     },
+                     {
+                       \"name\": \"Commit\",
+                       \"value\": \"[\`${GITHUB_SHA:0:7}\`]($COMMIT_URL)\",
+                       \"inline\": true
+                     },
+                     {
+                       \"name\": \"Repository\",
+                       \"value\": \"[${{ github.repository }}]($REPO_URL)\",
+                       \"inline\": false
+                     }
+                   ],
+                   \"footer\": {
+                     \"text\": \"GitHub Actions\"
+                   },
+                   \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                 }]
+               }" \
+               $DISCORD_WEBHOOK
+      
+      - name: Send Discord Notification for Pull Request
+        if: github.event_name == 'pull_request'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          
+          curl -H "Content-Type: application/json" \
+               -d "{
+                 \"embeds\": [{
+                   \"title\": \"Pull Request #$PR_NUMBER\",
+                   \"description\": \"**$PR_TITLE**\",
+                   \"url\": \"$PR_URL\",
+                   \"color\": 9807270,
+                   \"fields\": [
+                     {
+                       \"name\": \"Author\",
+                       \"value\": \"${{ github.actor }}\",
+                       \"inline\": true
+                     },
+                     {
+                       \"name\": \"Branch\",
+                       \"value\": \"\`${{ github.head_ref }}\` → \`${{ github.base_ref }}\`\",
+                       \"inline\": false
+                     },
+                     {
+                       \"name\": \"Link\",
+                       \"value\": \"[View Pull Request]($PR_URL)\",
+                       \"inline\": false
+                     }
+                   ],
+                   \"footer\": {
+                     \"text\": \"GitHub Actions\"
+                   },
+                   \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                 }]
+               }" \
+               $DISCORD_WEBHOOK
+      
+      - name: Send Discord Notification for Issues
+        if: github.event_name == 'issues'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          ISSUE_URL="${{ github.event.issue.html_url }}"
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          ACTION="${{ github.event.action }}"
+          
+          curl -H "Content-Type: application/json" \
+               -d "{
+                 \"embeds\": [{
+                   \"title\": \"Issue #$ISSUE_NUMBER $ACTION\",
+                   \"description\": \"**$ISSUE_TITLE**\",
+                   \"url\": \"$ISSUE_URL\",
+                   \"color\": 9807270,
+                   \"fields\": [
+                     {
+                       \"name\": \"Author\",
+                       \"value\": \"${{ github.actor }}\",
+                       \"inline\": true
+                     },
+                     {
+                       \"name\": \"Action\",
+                       \"value\": \"$ACTION\",
+                       \"inline\": true
+                     },
+                     {
+                       \"name\": \"Link\",
+                       \"value\": \"[View Issue]($ISSUE_URL)\",
+                       \"inline\": false
+                     }
+                   ],
+                   \"footer\": {
+                     \"text\": \"GitHub Actions\"
+                   },
+                   \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                 }]
+               }" \
+               $DISCORD_WEBHOOK
+      
+      - name: Send Discord Notification for Release
+        if: github.event_name == 'release'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          RELEASE_URL="${{ github.event.release.html_url }}"
+          RELEASE_NAME="${{ github.event.release.name }}"
+          RELEASE_TAG="${{ github.event.release.tag_name }}"
+          
+          curl -H "Content-Type: application/json" \
+               -d "{
+                 \"embeds\": [{
+                   \"title\": \"New Release: $RELEASE_TAG\",
+                   \"description\": \"**$RELEASE_NAME**\",
+                   \"url\": \"$RELEASE_URL\",
+                   \"color\": 9807270,
+                   \"fields\": [
+                     {
+                       \"name\": \"Tag\",
+                       \"value\": \"\`$RELEASE_TAG\`\",
+                       \"inline\": true
+                     },
+                     {
+                       \"name\": \"Author\",
+                       \"value\": \"${{ github.actor }}\",
+                       \"inline\": true
+                     },
+                     {
+                       \"name\": \"Link\",
+                       \"value\": \"[View Release]($RELEASE_URL)\",
+                       \"inline\": false
+                     }
+                   ],
+                   \"footer\": {
+                     \"text\": \"GitHub Actions\"
+                   },
+                   \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                 }]
+               }" \
+               $DISCORD_WEBHOOK
