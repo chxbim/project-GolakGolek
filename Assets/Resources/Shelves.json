@@ -1,0 +1,320 @@
+{
+  "shelves": [
+    {
+      "shelfId": 1,
+      "shelfType": "JajanKering",
+      "urutanRak": 1,
+      "levels": [
+        {
+          "levelIndex": 1,
+          "items": [
+            {
+              "namaItem": "Saus Berisik",
+              "kategori": "Makanan",
+              "varian": "Saus Teriyaki",
+              "harga": 10000,
+              "objectData": {
+                "fbxName": "SM_food_sauce_SausBerisik",
+                "kategoriObject": "makanan",
+                "subKategori": "saus"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "jarakHorizontal": 0.25,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        },
+        {
+          "levelIndex": 2,
+          "items": [
+            {
+              "namaItem": "Saus Berisik",
+              "kategori": "Makanan",
+              "varian": "Saus Teriyaki",
+              "harga": 10000,
+              "objectData": {
+                "fbxName": "SM_food_sauce_SausBerisik",
+                "kategoriObject": "makanan",
+                "subKategori": "saus"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.35,
+                "z": 0.0,
+                "jarakHorizontal": 0.25,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        },
+        {
+          "levelIndex": 3,
+          "items": [
+            {
+              "namaItem": "Saus Berisik",
+              "kategori": "Makanan",
+              "varian": "Saus Teriyaki",
+              "harga": 10000,
+              "objectData": {
+                "fbxName": "SM_food_sauce_SausBerisik",
+                "kategoriObject": "makanan",
+                "subKategori": "saus"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.70,
+                "z": 0.0,
+                "jarakHorizontal": 0.25,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "shelfId": 2,
+      "shelfType": "Kulkas",
+      "urutanRak": 2,
+      "levels": [
+        {
+          "levelIndex": 1,
+          "items": [
+            {
+              "namaItem": "Teh Botol Sosro",
+              "kategori": "Minuman",
+              "varian": "Teh Melati Original",
+              "harga": 5000,
+              "objectData": {
+                "fbxName": "SM_drink_tea_TehBotolSosro",
+                "kategoriObject": "minuman",
+                "subKategori": "teh"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "jarakHorizontal": 0.12,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        },
+        {
+          "levelIndex": 2,
+          "items": [
+            {
+              "namaItem": "Teh Botol Sosro",
+              "kategori": "Minuman",
+              "varian": "Teh Melati Original",
+              "harga": 5000,
+              "objectData": {
+                "fbxName": "SM_drink_tea_TehBotolSosro",
+                "kategoriObject": "minuman",
+                "subKategori": "teh"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.35,
+                "z": 0.0,
+                "jarakHorizontal": 0.12,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        },
+        {
+          "levelIndex": 3,
+          "items": [
+            {
+              "namaItem": "Teh Botol Sosro",
+              "kategori": "Minuman",
+              "varian": "Teh Melati Original",
+              "harga": 5000,
+              "objectData": {
+                "fbxName": "SM_drink_tea_TehBotolSosro",
+                "kategoriObject": "minuman",
+                "subKategori": "teh"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.70,
+                "z": 0.0,
+                "jarakHorizontal": 0.12,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "shelfId": 3,
+      "shelfType": "Showcase",
+      "urutanRak": 3,
+      "levels": [
+        {
+          "levelIndex": 1,
+          "items": [
+            {
+              "namaItem": "Pocari Sweat",
+              "kategori": "Minuman",
+              "varian": "Isotonic Original",
+              "harga": 7000,
+              "objectData": {
+                "fbxName": "SM_drink_isotonic_PocariSweat",
+                "kategoriObject": "minuman",
+                "subKategori": "isotonik"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "jarakHorizontal": 0.12,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        },
+        {
+          "levelIndex": 2,
+          "items": [
+            {
+              "namaItem": "Pocari Sweat",
+              "kategori": "Minuman",
+              "varian": "Isotonic Original",
+              "harga": 7000,
+              "objectData": {
+                "fbxName": "SM_drink_isotonic_PocariSweat",
+                "kategoriObject": "minuman",
+                "subKategori": "isotonik"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.35,
+                "z": 0.0,
+                "jarakHorizontal": 0.12,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        },
+        {
+          "levelIndex": 3,
+          "items": [
+            {
+              "namaItem": "Pocari Sweat",
+              "kategori": "Minuman",
+              "varian": "Isotonic Original",
+              "harga": 7000,
+              "objectData": {
+                "fbxName": "SM_drink_isotonic_PocariSweat",
+                "kategoriObject": "minuman",
+                "subKategori": "isotonik"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.70,
+                "z": 0.0,
+                "jarakHorizontal": 0.12,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "shelfId": 4,
+      "shelfType": "RakSusu",
+      "urutanRak": 4,
+      "levels": [
+        {
+          "levelIndex": 1,
+          "items": [
+            {
+              "namaItem": "Indomilk Full Cream",
+              "kategori": "Susu",
+              "varian": "Full Cream Plain",
+              "harga": 18000,
+              "objectData": {
+                "fbxName": "SM_dairy_milk_IndomilkFullCream",
+                "kategoriObject": "susu",
+                "subKategori": "susu-cair"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "jarakHorizontal": 0.15,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        },
+        {
+          "levelIndex": 2,
+          "items": [
+            {
+              "namaItem": "Indomilk Full Cream",
+              "kategori": "Susu",
+              "varian": "Full Cream Plain",
+              "harga": 18000,
+              "objectData": {
+                "fbxName": "SM_dairy_milk_IndomilkFullCream",
+                "kategoriObject": "susu",
+                "subKategori": "susu-cair"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.35,
+                "z": 0.0,
+                "jarakHorizontal": 0.15,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        },
+        {
+          "levelIndex": 3,
+          "items": [
+            {
+              "namaItem": "Indomilk Full Cream",
+              "kategori": "Susu",
+              "varian": "Full Cream Plain",
+              "harga": 18000,
+              "objectData": {
+                "fbxName": "SM_dairy_milk_IndomilkFullCream",
+                "kategoriObject": "susu",
+                "subKategori": "susu-cair"
+              },
+              "posisi": {
+                "x": 0.0,
+                "y": 0.70,
+                "z": 0.0,
+                "jarakHorizontal": 0.15,
+                "totalPerLevel": 1,
+                "jumlahBaris": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
