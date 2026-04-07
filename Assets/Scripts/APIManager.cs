@@ -34,11 +34,11 @@ public class APIManager : MonoBehaviour
 
     // Satu endpoint untuk GET (ambil produk) dan POST (kirim cart).
     // Konfirmasi ke tim JTV apakah game_object support POST method
-    private string ItemsEndpoint => $"{baseUrl}/game_object";
+    private string ItemsEndpoint => $"{baseUrl}";
 
     // CartEndpoint belum tersedia/gtw yh gmn di backend JTV.
     // Nanti isi URL-nya setelah dikonfirmasi ke tim backend.
-    private string CartEndpoint => $"{baseUrl}/game_object";
+    private string CartEndpoint => $"{baseUrl}";
 
     // ── Public: Fetch Items ──────────────────────────────────
 
@@ -55,11 +55,26 @@ public class APIManager : MonoBehaviour
     private IEnumerator GetItemsRoutine(Action<List<GameItemData>> onSuccess, Action<string> onError)
     {
         using UnityWebRequest req = UnityWebRequest.Get(ItemsEndpoint);
+        // TAMBAHAN HEADER
+        req.SetRequestHeader("Accept", "application/json");
+        req.SetRequestHeader("User-Agent", "UnityClient");
+
+        // OPTIONAL
+        req.SetRequestHeader("Content-Type", "application/json");
         yield return req.SendWebRequest();
 
         if (req.result != UnityWebRequest.Result.Success)
         {
             string err = $"[APIManager] GET gagal: {req.error}";
+
+            //HANDLE 405 METHOD NOT ALLOWED
+            if (req.responseCode == 405)
+            {
+                string allow = req.GetResponseHeader("Allow");
+                Debug.LogError($"[APIManager] 405 Method Not Allowed. Allowed methods: {allow}");
+                err += $" | Allowed: {allow}";
+            }
+
             Debug.LogError(err);
             onError?.Invoke(err);
             yield break;
@@ -68,13 +83,10 @@ public class APIManager : MonoBehaviour
         string rawJson = req.downloadHandler.text;
         Debug.Log($"[APIManager] Raw JSON: {rawJson}");
 
-        // ── Remap key → field name yang bisa dibaca JsonUtility ──
         string remapped = RemapJsonKeys(rawJson);
         Debug.Log($"[APIManager] Remapped JSON: {remapped}");
 
-        // ── JsonUtility tidak bisa parse array langsung, bungkus dulu ──
         string wrapped = "{\"items\":" + remapped + "}";
-
 
         GameItemDataList parsed;
         try
@@ -128,6 +140,15 @@ public class APIManager : MonoBehaviour
         if (req.result != UnityWebRequest.Result.Success)
         {
             string err = $"[APIManager] POST gagal: {req.error}";
+
+            // 🔥 HANDLE 405 METHOD NOT ALLOWED
+            if (req.responseCode == 405)
+            {
+                string allow = req.GetResponseHeader("Allow");
+                Debug.LogError($"[APIManager] 405 Method Not Allowed. Allowed methods: {allow}");
+                err += $" | Allowed: {allow}";
+            }
+
             Debug.LogError(err);
             onError?.Invoke(err);
             yield break;
