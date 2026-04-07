@@ -137,7 +137,7 @@ public class CartSystem : MonoBehaviour
             itemPayloads.Add(new CartItemPayload
             {
                 namaItem = e.Item.namaItem,
-                kategori = e.Item.kategori,
+                kategori = e.Item.kategoriBarang,
                 harga = e.Item.Harga,
                 quantity = e.Quantity
             });

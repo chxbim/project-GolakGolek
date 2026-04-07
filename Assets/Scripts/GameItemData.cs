@@ -1,43 +1,49 @@
+using UnityEngine;
+
 /// <summary>
-/// Data satu item dari API. Tidak butuh Newtonsoft sama sekali.
-///
-/// Field names di sini sengaja pakai camelCase karena JsonUtility
-/// tidak bisa handle key dengan spasi. Remapping dilakukan di
-/// APIManager.RemapJsonKeys() sebelum di-parse.
+/// Data satu item dari JSON/API.
+/// Field names harus cocok persis dengan key di Shelves.json (setelah RemapJsonKeys).
 /// </summary>
 [System.Serializable]
 public class GameItemData
 {
-    // Nama field HARUS cocok persis dengan hasil RemapJsonKeys() di APIManager
-    public string namaItem;
-    public string kategori;
-    public string modelType;
-    public string sausVarian;
-    public string hargaRaw;     // raw string dari API, parse ke float lewat property
+    public string id;
+    public string namaItem;           // dari: nama_item
+    public string kategoriBarang;     // dari: kategori_barang
+    public string varian;
+    public string hargaRaw;           // dari: harga
+    public string objectFileName;     // dari: object_file_name
+    public string objectKategori;     // dari: object_kategori
+    public string objectSubKategori;  // dari: object_sub_kategori
+    public float posisiX;            // dari: posisi_x
+    public float posisiY;            // dari: posisi_y
+    public float posisiZ;            // dari: posisi_z
+    public float jarakVertikal;      // dari: jarak_vertikal
+    public float jarakHorizontal;    // dari: jarak_horizontal
+    public int totalPerRak;        // dari: total_per_rak
+    public int urutanRak;          // dari: urutan_rak  ← kunci matching ke ShelfUnit
+    public int jumlahBaris;        // dari: jumlah_baris
 
-    // ── Computed ────────────────────────────────────────────
-
-    /// <summary>Harga sebagai float, siap untuk kalkulasi di CartSystem.</summary>
     public float Harga
     {
         get
         {
-            if (float.TryParse(hargaRaw, out float result))
-                return result;
+            if (float.TryParse(hargaRaw, out float result)) return result;
             return 0f;
         }
     }
 
     public override string ToString()
-        => $"{namaItem} [{kategori}] – Rp {Harga:N0}";
+     => $"{namaItem} [{kategoriBarang}] {varian} – Rp {Harga:N0} (rak ke-{urutanRak})";
 }
 
-/// <summary>
-/// Wrapper karena JsonUtility.FromJson tidak bisa langsung parse array JSON.
-/// Dipakai internal di APIManager saja.
-/// </summary>
+// Wrapper karena JsonUtility tidak bisa parse array JSON langsung
 [System.Serializable]
 internal class GameItemDataList
 {
     public GameItemData[] items;
 }
+
+// ── Wrapper untuk flat API response (game_object endpoint) ───
+// Dibutuhkan APIManager karena JsonUtility tidak bisa parse
+// array JSON langsung — harus dibungkus object dulu.

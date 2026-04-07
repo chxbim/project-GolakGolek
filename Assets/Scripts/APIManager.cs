@@ -30,10 +30,15 @@ public class APIManager : MonoBehaviour
     // ── Config ───────────────────────────────────────────────
 
     [Header("API Config")]
-    [SerializeField] private string baseUrl = "https://plus.jtv.co.id/Apiupdate";
+    [SerializeField] private string baseUrl = "https://plus.jtv.co.id/Apigame/game_object";
 
+    // Satu endpoint untuk GET (ambil produk) dan POST (kirim cart).
+    // Konfirmasi ke tim JTV apakah game_object support POST method
     private string ItemsEndpoint => $"{baseUrl}/game_object";
-    private string CartEndpoint => $"{baseUrl}/cart";   // sesuaikan saat endpoint cart tersedia
+
+    // CartEndpoint belum tersedia/gtw yh gmn di backend JTV.
+    // Nanti isi URL-nya setelah dikonfirmasi ke tim backend.
+    private string CartEndpoint => $"{baseUrl}/game_object";
 
     // ── Public: Fetch Items ──────────────────────────────────
 
@@ -69,6 +74,7 @@ public class APIManager : MonoBehaviour
 
         // ── JsonUtility tidak bisa parse array langsung, bungkus dulu ──
         string wrapped = "{\"items\":" + remapped + "}";
+
 
         GameItemDataList parsed;
         try
@@ -137,18 +143,26 @@ public class APIManager : MonoBehaviour
     /// <summary>
     /// Ganti JSON key dari API (punya spasi / trailing space) ke nama field
     /// yang valid untuk JsonUtility. Urutan replace penting — lebih spesifik dulu.
-    ///
     /// Kalau API nambah field baru, cukup tambah baris Replace di sini.
     /// </summary>
     private static string RemapJsonKeys(string json)
     {
         return json
-            .Replace("\"Nama Item\"", "\"namaItem\"")
-            .Replace("\"Kategori \"", "\"kategori\"")   // ← trailing space di API!
-            .Replace("\"Kategori\"", "\"kategori\"")   // fallback tanpa spasi
-            .Replace("\"Model Type\"", "\"modelType\"")
-            .Replace("\"Saus Varian\"", "\"sausVarian\"")
-            .Replace("\"Harga\"", "\"hargaRaw\"");
+            .Replace("\"nama_item\"", "\"namaItem\"")
+            .Replace("\"kategori_barang\"", "\"kategoriBarang\"")
+            .Replace("\"harga\"", "\"hargaRaw\"")
+            .Replace("\"object_file_name\"", "\"objectFileName\"")
+            .Replace("\"object_kategori\"", "\"objectKategori\"")
+            .Replace("\"object_sub_kategori\"", "\"objectSubKategori\"")
+            .Replace("\"posisi_x\"", "\"posisiX\"")
+            .Replace("\"posisi_y\"", "\"posisiY\"")
+            .Replace("\"posisi_z\"", "\"posisiZ\"")
+            .Replace("\"jarak_vertikal\"", "\"jarakVertikal\"")
+            .Replace("\"jarak_horizontal\"", "\"jarakHorizontal\"")
+            .Replace("\"total_per_rak\"", "\"totalPerRak\"")
+            .Replace("\"urutan_rak\"", "\"urutanRak\"")
+            .Replace("\"jumlah_baris\"", "\"jumlahBaris\"");
+        // "id", "varian", "created_at", "updated_at" tidak perlu diremap
     }
 }
 

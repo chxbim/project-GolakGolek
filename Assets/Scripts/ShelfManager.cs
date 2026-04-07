@@ -1,41 +1,23 @@
+using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Orchestrator: fetch data dari API, lalu assign ke masing-masing ShelfUnit.
+/// fetch data dari API,lalu assign ke ShelfUnit berdasarkan urutan_rak.
 ///
 /// Setup Inspector:
-///   • Klik "+" di list Shelf Assignments
-///   • Tiap entry: shelfNumber (cocokkan dengan ShelfUnit) + namaItemKey
-///     (nama item di API yang mau diassign ke rak itu)
-///
-/// Cara pakai:
-///   1. Pasang ShelfManager di scene (1x, boleh di GameObject "Managers")
-///   2. Assign semua ShelfUnit yang ada di scene via Inspector
-///   3. Jalankan game → ShelfManager fetch API → distribute ke rak
+///   • Isi list Shelf Units — drag semua ShelfUnit dari scene
+///   • Index di list = urutan_rak dari API (0-based)
+///     Contoh: index 0 → rak "Saus Berisik" (urutan_rak: 0)
+///             index 1 → rak "Saus Huha"    (urutan_rak: 1)
 /// </summary>
 public class ShelfManager : MonoBehaviour
 {
-    [System.Serializable]
-    public class ShelfAssignment
-    {
-        [Tooltip("Cocokkan dengan shelfNumber di ShelfUnit")]
-        public int shelfNumber;
-
-        [Tooltip("Nama item dari API (field 'Nama Item') yang diassign ke rak ini")]
-        public string namaItemKey;
-
-        [Tooltip("Drag ShelfUnit dari scene ke sini")]
-        public ShelfUnit targetShelf;
-    }
-
-    [Header("Shelf Assignments")]
-    [SerializeField] private List<ShelfAssignment> assignments = new List<ShelfAssignment>();
+    [Header("Drag semua ShelfUnit dari scene — urut sesuai urutan_rak API")]
+    [SerializeField] private List<ShelfUnit> shelfUnits = new List<ShelfUnit>();
 
     [Header("Debug")]
     [SerializeField] private bool logAllItemsOnFetch = true;
-
-    // ── Lifecycle ────────────────────────────────────────────
 
     private void Start()
     {
@@ -48,48 +30,49 @@ public class ShelfManager : MonoBehaviour
         APIManager.Instance.FetchItems(OnItemsFetched, OnFetchError);
     }
 
-    // ── Callbacks ────────────────────────────────────────────
-
     private void OnItemsFetched(List<GameItemData> items)
     {
         if (logAllItemsOnFetch)
         {
-            Debug.Log($"[ShelfManager] Fetch berhasil, total {items.Count} item:");
-            foreach (GameItemData item in items)
+            Debug.Log($"[ShelfManager] Fetch berhasil — {items.Count} item:");
+            foreach (var item in items)
                 Debug.Log($"   • {item}");
         }
 
-        // Build lookup dictionary: NamaItem → GameItemData
-        Dictionary<string, GameItemData> lookup = new Dictionary<string, GameItemData>();
-        foreach (GameItemData item in items)
+        // Build dictionary: urutanRak → GameItemData
+        var lookup = new Dictionary<int, GameItemData>();
+        foreach (var item in items)
         {
-            if (!string.IsNullOrEmpty(item.namaItem))
-                lookup[item.namaItem] = item;
+            if (!lookup.ContainsKey(item.urutanRak))
+                lookup[item.urutanRak] = item;
+            else
+                Debug.LogWarning($"[ShelfManager] urutan_rak {item.urutanRak} duplikat — '{item.namaItem}' diskip.");
         }
 
-        // Distribute ke ShelfUnit sesuai assignment
-        foreach (ShelfAssignment assignment in assignments)
+        // Assign ke ShelfUnit — index list = urutanRak
+        for (int i = 0; i < shelfUnits.Count; i++)
         {
-            if (assignment.targetShelf == null)
+            if (shelfUnits[i] == null)
             {
-                Debug.LogWarning($"[ShelfManager] Rak #{assignment.shelfNumber}: targetShelf belum diassign di Inspector!");
+                Debug.LogWarning($"[ShelfManager] ShelfUnit index {i} null, skip.");
                 continue;
             }
 
-            if (lookup.TryGetValue(assignment.namaItemKey, out GameItemData data))
+            if (lookup.TryGetValue(i, out GameItemData data))
             {
-                assignment.targetShelf.SetItemData(data);
+                shelfUnits[i].SetItemData(data);
             }
             else
             {
-                Debug.LogWarning($"[ShelfManager] Item '{assignment.namaItemKey}' tidak ditemukan di API response.");
+                Debug.LogWarning($"[ShelfManager] Tidak ada item dengan urutan_rak {i} " +
+                                 $"untuk '{shelfUnits[i].DisplayName}'. Pakai fallback.");
             }
         }
     }
 
     private void OnFetchError(string error)
     {
-        Debug.LogError($"[ShelfManager] Gagal fetch items: {error}\n" +
-                       "ShelfUnit akan jatuh ke fallback data yang diset di Inspector.");
+        Debug.LogError($"[ShelfManager] Gagal fetch: {error}\n" +
+                       "Semua ShelfUnit akan pakai fallback data dari Inspector.");
     }
 }
