@@ -27,6 +27,19 @@ public class APIManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    // ── Config ───────────────────────────────────────────────
+
+    [Header("API Config")]
+    [SerializeField] private string baseUrl = "https://plus.jtv.co.id/Apigame/game_object";
+
+    // Satu endpoint untuk GET (ambil produk) dan POST (kirim cart).
+    // Konfirmasi ke tim JTV apakah game_object support POST method
+    private string ItemsEndpoint => $"{baseUrl}";
+
+    // CartEndpoint belum tersedia/gtw yh gmn di backend JTV.
+    // Nanti isi URL-nya setelah dikonfirmasi ke tim backend.
+    private string CartEndpoint => $"{baseUrl}";
+
     // ── Public: Fetch Items ──────────────────────────────────
 
     /// <summary>
@@ -41,8 +54,15 @@ public class APIManager : MonoBehaviour
 
     private IEnumerator GetItemsRoutine(Action<List<GameItemData>> onSuccess, Action<string> onError)
     {
-        using UnityWebRequest req = UnityWebRequest.Get(https://plus.jtv.co.id/Apigame/game_object);
-       
+        using UnityWebRequest req = UnityWebRequest.Get(ItemsEndpoint);
+        // TAMBAHAN HEADER
+        req.SetRequestHeader("Accept", "application/json");
+        req.SetRequestHeader("User-Agent", "UnityClient");
+
+        // OPTIONAL
+        req.SetRequestHeader("Content-Type", "application/json");
+        yield return req.SendWebRequest();
+
         if (req.result != UnityWebRequest.Result.Success)
         {
             string err = $"[APIManager] GET gagal: {req.error}";
@@ -110,7 +130,7 @@ public class APIManager : MonoBehaviour
         string bodyJson = JsonUtility.ToJson(payload);
         byte[] bodyRaw = Encoding.UTF8.GetBytes(bodyJson);
 
-        using UnityWebRequest req = new UnityWebRequest(https://plus.jtv.co.id/Apigame/game_object, "POST");
+        using UnityWebRequest req = new UnityWebRequest(CartEndpoint, "POST");
         req.uploadHandler = new UploadHandlerRaw(bodyRaw);
         req.downloadHandler = new DownloadHandlerBuffer();
         req.SetRequestHeader("Content-Type", "application/json");
@@ -121,6 +141,7 @@ public class APIManager : MonoBehaviour
         {
             string err = $"[APIManager] POST gagal: {req.error}";
 
+            // 🔥 HANDLE 405 METHOD NOT ALLOWED
             if (req.responseCode == 405)
             {
                 string allow = req.GetResponseHeader("Allow");
