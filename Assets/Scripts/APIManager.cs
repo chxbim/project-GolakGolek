@@ -30,15 +30,10 @@ public class APIManager : MonoBehaviour
     // ── Config ───────────────────────────────────────────────
 
     [Header("API Config")]
-    [SerializeField] private string baseUrl = "https://plus.jtv.co.id/Apigame/game_object";
-
-    // Satu endpoint untuk GET (ambil produk) dan POST (kirim cart).
-    // Konfirmasi ke tim JTV apakah game_object support POST method
-    private string ItemsEndpoint => $"{baseUrl}";
+    [SerializeField] private const string BASE_URL = "https://plus.jtv.co.id/Apigame/game_object";
 
     // CartEndpoint belum tersedia/gtw yh gmn di backend JTV.
     // Nanti isi URL-nya setelah dikonfirmasi ke tim backend.
-    private string CartEndpoint => $"{baseUrl}";
 
     // ── Public: Fetch Items ──────────────────────────────────
 
@@ -52,66 +47,31 @@ public class APIManager : MonoBehaviour
         StartCoroutine(GetItemsRoutine(onSuccess, onError));
     }
 
+    private bool HasInternetConnection()
+    {
+        return Application.internetReachability != NetworkReachability.NotReachable;
+    }
+
     private IEnumerator GetItemsRoutine(Action<List<GameItemData>> onSuccess, Action<string> onError)
     {
-        using UnityWebRequest req = UnityWebRequest.Get(ItemsEndpoint);
-        // TAMBAHAN HEADER
-        req.SetRequestHeader("Accept", "application/json");
-        req.SetRequestHeader("User-Agent", "UnityClient");
 
-        // OPTIONAL
-        req.SetRequestHeader("Content-Type", "application/json");
+        UnityWebRequest req = UnityWebRequest.Get(BASE_URL);
+
         yield return req.SendWebRequest();
 
         if (req.result != UnityWebRequest.Result.Success)
         {
-            string err = $"[APIManager] GET gagal: {req.error}";
-
-            //HANDLE 405 METHOD NOT ALLOWED
-            if (req.responseCode == 405)
-            {
-                string allow = req.GetResponseHeader("Allow");
-                Debug.LogError($"[APIManager] 405 Method Not Allowed. Allowed methods: {allow}");
-                err += $" | Allowed: {allow}";
-            }
-
-            Debug.LogError(err);
-            onError?.Invoke(err);
-            yield break;
+            Debug.LogError(req.error);
+            onError?.Invoke(req.error);
         }
-
-        string rawJson = req.downloadHandler.text;
-        Debug.Log($"[APIManager] Raw JSON: {rawJson}");
-
-        string remapped = RemapJsonKeys(rawJson);
-        Debug.Log($"[APIManager] Remapped JSON: {remapped}");
-
-        string wrapped = "{\"items\":" + remapped + "}";
-
-        GameItemDataList parsed;
-        try
+        else
         {
-            parsed = JsonUtility.FromJson<GameItemDataList>(wrapped);
-        }
-        catch (Exception e)
-        {
-            string err = $"[APIManager] JSON parse error: {e.Message}";
-            Debug.LogError(err);
-            onError?.Invoke(err);
-            yield break;
-        }
+            string json = req.downloadHandler.text;
+            Debug.Log("Request berhasil");
+            Debug.Log(json);
 
-        if (parsed == null || parsed.items == null)
-        {
-            string err = "[APIManager] Parse result null — cek format JSON dari API.";
-            Debug.LogError(err);
-            onError?.Invoke(err);
-            yield break;
+            // parsing JSON di sini
         }
-
-        List<GameItemData> result = new List<GameItemData>(parsed.items);
-        Debug.Log($"[APIManager] Berhasil fetch {result.Count} item(s).");
-        onSuccess?.Invoke(result);
     }
 
     // ── Public: Post Cart ────────────────────────────────────
@@ -130,29 +90,12 @@ public class APIManager : MonoBehaviour
         string bodyJson = JsonUtility.ToJson(payload);
         byte[] bodyRaw = Encoding.UTF8.GetBytes(bodyJson);
 
-        using UnityWebRequest req = new UnityWebRequest(CartEndpoint, "POST");
+        using UnityWebRequest req = new UnityWebRequest(BASE_URL, "POST");
         req.uploadHandler = new UploadHandlerRaw(bodyRaw);
         req.downloadHandler = new DownloadHandlerBuffer();
         req.SetRequestHeader("Content-Type", "application/json");
 
         yield return req.SendWebRequest();
-
-        if (req.result != UnityWebRequest.Result.Success)
-        {
-            string err = $"[APIManager] POST gagal: {req.error}";
-
-            // 🔥 HANDLE 405 METHOD NOT ALLOWED
-            if (req.responseCode == 405)
-            {
-                string allow = req.GetResponseHeader("Allow");
-                Debug.LogError($"[APIManager] 405 Method Not Allowed. Allowed methods: {allow}");
-                err += $" | Allowed: {allow}";
-            }
-
-            Debug.LogError(err);
-            onError?.Invoke(err);
-            yield break;
-        }
 
         string response = req.downloadHandler.text;
         Debug.Log($"[APIManager] POST cart berhasil. Response: {response}");
