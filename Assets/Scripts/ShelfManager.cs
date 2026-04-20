@@ -1,21 +1,13 @@
-using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// fetch data dari API,lalu assign ke ShelfUnit berdasarkan urutan_rak.
-///
-/// Setup Inspector:
-///   • Isi list Shelf Units — drag semua ShelfUnit dari scene
-///   • Index di list = urutan_rak dari API (0-based)
-///     Contoh: index 0 → rak "Saus Berisik" (urutan_rak: 0)
-///             index 1 → rak "Saus Huha"    (urutan_rak: 1)
+/// Auto-discover semua ShelfUnit di scene, lalu cocokkan dengan data API
+/// berdasarkan shelfId (Inspector ShelfUnit) == urutan_rak (API).
+/// Tidak perlu drag manual apapun di Inspector ShelfManager.
 /// </summary>
 public class ShelfManager : MonoBehaviour
 {
-    [Header("Drag semua ShelfUnit dari scene — urut sesuai urutan_rak API")]
-    [SerializeField] private List<ShelfUnit> shelfUnits = new List<ShelfUnit>();
-
     [Header("Debug")]
     [SerializeField] private bool logAllItemsOnFetch = true;
 
@@ -26,7 +18,6 @@ public class ShelfManager : MonoBehaviour
             Debug.LogError("[ShelfManager] APIManager tidak ada di scene!");
             return;
         }
-
         APIManager.Instance.FetchItems(OnItemsFetched, OnFetchError);
     }
 
@@ -34,45 +25,46 @@ public class ShelfManager : MonoBehaviour
     {
         if (logAllItemsOnFetch)
         {
-            Debug.Log($"[ShelfManager] Fetch berhasil — {items.Count} item:");
+            Debug.Log($"[ShelfManager] Fetch berhasil — {items.Count} item dari API:");
             foreach (var item in items)
                 Debug.Log($"   • {item}");
         }
 
-        // Build dictionary: urutanRak → GameItemData
+        // Build lookup: urutan_rak → GameItemData
         var lookup = new Dictionary<int, GameItemData>();
         foreach (var item in items)
         {
             if (!lookup.ContainsKey(item.urutanRak))
                 lookup[item.urutanRak] = item;
             else
-                Debug.LogWarning($"[ShelfManager] urutan_rak {item.urutanRak} duplikat — '{item.namaItem}' diskip.");
+                Debug.LogWarning($"[ShelfManager] urutan_rak {item.urutanRak} duplikat di API — '{item.namaItem}' diskip.");
         }
 
-        // Assign ke ShelfUnit — index list = urutanRak
-        for (int i = 0; i < shelfUnits.Count; i++)
-        {
-            if (shelfUnits[i] == null)
-            {
-                Debug.LogWarning($"[ShelfManager] ShelfUnit index {i} null, skip.");
-                continue;
-            }
+        // Auto-discover semua ShelfUnit di scene
+        ShelfUnit[] allShelves = FindObjectsOfType<ShelfUnit>();
+        Debug.Log($"[ShelfManager] Ditemukan {allShelves.Length} ShelfUnit di scene.");
 
-            if (lookup.TryGetValue(i, out GameItemData data))
+        int matched = 0;
+        foreach (ShelfUnit shelf in allShelves)
+        {
+            if (lookup.TryGetValue(shelf.ShelfId, out GameItemData data))
             {
-                shelfUnits[i].SetItemData(data);
+                shelf.SetItemData(data);
+                matched++;
             }
             else
             {
-                Debug.LogWarning($"[ShelfManager] Tidak ada item dengan urutan_rak {i} " +
-                                 $"untuk '{shelfUnits[i].DisplayName}'. Pakai fallback.");
+                Debug.LogWarning($"[ShelfManager] ShelfUnit '{shelf.DisplayName}' (shelfId={shelf.ShelfId}) " +
+                                 "tidak ada padanannya di API — pakai fallback Inspector.");
             }
         }
+
+        Debug.Log($"[ShelfManager] {matched}/{allShelves.Length} ShelfUnit berhasil dapat data API.");
     }
 
     private void OnFetchError(string error)
     {
-        Debug.LogError($"[ShelfManager] Gagal fetch: {error}\n" +
-                       "Semua ShelfUnit akan pakai fallback data dari Inspector.");
+        Debug.LogError($"[ShelfManager] Gagal fetch API: {error}\n" +
+                       "Semua ShelfUnit pakai fallback dari Inspector.");
     }
 }

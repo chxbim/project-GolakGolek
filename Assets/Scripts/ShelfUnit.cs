@@ -1,54 +1,39 @@
 using UnityEngine;
 
-/// <summary>
-/// Enum semua jenis rak di scene.
-/// Cocokkan dengan nama parent GameObject di hierarchy.
-/// </summary>
 public enum ShelfType
 {
-    JajanCiki,       // rak jajan ciki 1-4
-    Minuman,     // rak minuman susu 1-4
-    PelengkapDapur,  // rak pelengkap dapur 1-2
-    Kulkas,          // kulkas 1-2
-    Showcase,        // showcase 1-2
-    Vending          // vending 1
+    JajanCiki,
+    Minuman,
+    PelengkapDapur,
+    Kulkas,
+    Showcase,
+    Vending
 }
 
-/// <summary>
-/// Pasang di GameObject PARENT rak (misal: "rak jajan ciki1").
-/// Parent sudah punya BoxCollider solid (blocker) — ShelfUnit numpang di sana.
-/// Proximity diurus oleh ProximityDetector di child isTrigger.
-///
-/// Hierarchy yang benar:
-///   rak jajan ciki1          <- ShelfUnit.cs di sini (parent)
-///   └── isTrigger rak ...    <- ProximityDetector.cs di sini (child)
-///
-/// Ketika player tap, raycast kena collider parent atau child ->
-/// GetComponentInParent naik ke parent -> ketemu ShelfUnit -> Interact().
-/// </summary>
 public class ShelfUnit : MonoBehaviour, IInteractable
 {
     // ── Inspector ────────────────────────────────────────────
 
     [Header("Shelf Identity")]
-    [SerializeField] private int shelfId = 1;
+    [SerializeField] private int shelfId = 0;
+    // PENTING: shelfId harus sama dengan urutan_rak di API
+    // urutan_rak 0 = Saus Berisik, 1 = Saus Huha, dst
     [SerializeField] private ShelfType shelfType = ShelfType.JajanCiki;
 
-    [Header("Fallback (testing tanpa JSON)")]
-    [Tooltip("Dipakai saat ShelfManager belum inject data dari JSON/API.")]
+    [Header("Fallback — dipakai hanya jika API tidak bisa dijangkau")]
     [SerializeField] private string fallbackNamaItem = "Item Test";
-    [SerializeField] private float fallbackHarga = 69420f;
+    [SerializeField] private float fallbackHarga = 5000f;
     [SerializeField] private string fallbackKategori = "Umum";
 
     // ── Runtime ──────────────────────────────────────────────
 
     public GameItemData ItemData { get; private set; }
+    public int ShelfId => shelfId;          // dibaca ShelfManager
+    public string DisplayName => $"Rak {shelfId} ({shelfType})";
 
     private bool playerInRange = false;
 
     // ── IInteractable ────────────────────────────────────────
-
-    public string DisplayName => $"Rak {shelfId} ({shelfType})";
 
     public void Interact()
     {
@@ -60,7 +45,7 @@ public class ShelfUnit : MonoBehaviour, IInteractable
 
         if (ItemData == null)
         {
-            Debug.LogWarning($"[ShelfUnit] {DisplayName} belum ada item data.");
+            Debug.LogWarning($"[ShelfUnit] {DisplayName} tidak ada ItemData.");
             return;
         }
 
@@ -80,29 +65,29 @@ public class ShelfUnit : MonoBehaviour, IInteractable
         CartSystem.Instance?.AddItem(ItemData);
     }
 
-    // ── Dipanggil oleh ProximityDetector (child) ─────────────
-
-    /// <summary>
-    /// Dipanggil ProximityDetector saat player masuk/keluar isTrigger child.
-    /// </summary>
-    public void SetPlayerInRange(bool inRange)
-    {
-        playerInRange = inRange;
-        Debug.Log($"[ShelfUnit] {DisplayName} -> player in range: {inRange}");
-    }
-
-    // ── Dipanggil oleh ShelfManager ──────────────────────────
+    // ── Dipanggil ShelfManager setelah API fetch ─────────────
 
     public void SetItemData(GameItemData data)
     {
         ItemData = data;
-        Debug.Log($"[ShelfUnit] {DisplayName} -> item diset: {data}");
+        Debug.Log($"[ShelfUnit] {DisplayName} → data dari API: {data}");
+    }
+
+    // ── Dipanggil ProximityDetector (child) ──────────────────
+
+    public void SetPlayerInRange(bool inRange)
+    {
+        playerInRange = inRange;
+        Debug.Log($"[ShelfUnit] {DisplayName} → player in range: {inRange}");
     }
 
     // ── Lifecycle ─────────────────────────────────────────────
 
     private void Start()
     {
+        // Fallback hanya jalan kalau API gagal dan SetItemData belum pernah dipanggil.
+        // Karena API fetch async, Start() jalan duluan — fallback ini akan
+        // di-override oleh SetItemData() begitu ShelfManager selesai fetch.
         if (ItemData == null)
         {
             ItemData = new GameItemData
@@ -113,7 +98,7 @@ public class ShelfUnit : MonoBehaviour, IInteractable
                 varian = "-",
                 objectFileName = "Unknown"
             };
-            Debug.Log($"[ShelfUnit] {DisplayName} pakai fallback: {ItemData}");
+            Debug.Log($"[ShelfUnit] {DisplayName} → fallback sementara (menunggu API)...");
         }
     }
 
@@ -124,7 +109,6 @@ public class ShelfUnit : MonoBehaviour, IInteractable
         Gizmos.color = playerInRange
             ? new Color(0.2f, 1f, 0.3f, 0.25f)
             : new Color(1f, 0.85f, 0.1f, 0.1f);
-
         Gizmos.DrawWireCube(transform.position, transform.localScale);
     }
 }

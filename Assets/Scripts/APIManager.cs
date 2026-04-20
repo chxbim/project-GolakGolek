@@ -5,81 +5,75 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
-/// <summary>
-/// Singleton yang mengelola semua komunikasi ke API JTV.
-/// Tidak butuh Newtonsoft — JsonUtility dipakai dengan key remapping manual.
-/// Letakkan di scene sebagai satu GameObject "APIManager".
-/// </summary>
 public class APIManager : MonoBehaviour
 {
-    // ── Singleton ────────────────────────────────────────────
-
     public static APIManager Instance { get; private set; }
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
 
     // ── Config ───────────────────────────────────────────────
-
+    // FIX: const tidak bisa [SerializeField] — pakai string biasa
     [Header("API Config")]
-    [SerializeField] private const string BASE_URL = "https://plus.jtv.co.id/Apigame/game_object";
+    [SerializeField] private string baseUrl = "https://plus.jtv.co.id/Apigame/game_object";
 
-    // CartEndpoint belum tersedia/gtw yh gmn di backend JTV.
-    // Nanti isi URL-nya setelah dikonfirmasi ke tim backend.
+    // ── GET ──────────────────────────────────────────────────
 
-    // ── Public: Fetch Items ──────────────────────────────────
-
-    /// <summary>
-    /// GET semua item dari API.
-    /// onSuccess dipanggil dengan List GameItemData jika berhasil.
-    /// onError dipanggil dengan pesan error jika gagal.
-    /// </summary>
     public void FetchItems(Action<List<GameItemData>> onSuccess, Action<string> onError = null)
     {
         StartCoroutine(GetItemsRoutine(onSuccess, onError));
     }
 
-    private bool HasInternetConnection()
-    {
-        return Application.internetReachability != NetworkReachability.NotReachable;
-    }
-
     private IEnumerator GetItemsRoutine(Action<List<GameItemData>> onSuccess, Action<string> onError)
     {
-
-        UnityWebRequest req = UnityWebRequest.Get(BASE_URL);
-
+        using UnityWebRequest req = UnityWebRequest.Get(baseUrl);
         yield return req.SendWebRequest();
 
         if (req.result != UnityWebRequest.Result.Success)
         {
-            Debug.LogError(req.error);
+            Debug.LogError($"[APIManager] GET gagal: {req.error}");
             onError?.Invoke(req.error);
+            yield break;
         }
-        else
-        {
-            string json = req.downloadHandler.text;
-            Debug.Log("Request berhasil");
-            Debug.Log(json);
 
-            // parsing JSON di sini
+        string rawJson = req.downloadHandler.text;
+        Debug.Log($"[APIManager] Raw JSON: {rawJson}");
+
+        // FIX: Remap key snake_case → camelCase supaya JsonUtility bisa baca
+        string remapped = RemapJsonKeys(rawJson);
+
+        // FIX: JsonUtility tidak bisa parse array langsung — bungkus dulu
+        string wrapped = "{\"items\":" + remapped + "}";
+
+        GameItemDataList parsed;
+        try
+        {
+            parsed = JsonUtility.FromJson<GameItemDataList>(wrapped);
         }
+        catch (Exception e)
+        {
+            Debug.LogError($"[APIManager] Parse error: {e.Message}");
+            onError?.Invoke(e.Message);
+            yield break;
+        }
+
+        if (parsed?.items == null || parsed.items.Length == 0)
+        {
+            Debug.LogError("[APIManager] Parse result kosong.");
+            onError?.Invoke("Parse result null/empty");
+            yield break;
+        }
+
+        Debug.Log($"[APIManager] Berhasil parse {parsed.items.Length} item(s).");
+        onSuccess?.Invoke(new List<GameItemData>(parsed.items));
     }
 
-    // ── Public: Post Cart ────────────────────────────────────
+    // ── POST ─────────────────────────────────────────────────
 
-    /// <summary>
-    /// POST data cart ke API.
-    /// JsonUtility.ToJson() dipakai — tidak butuh Newtonsoft.
-    /// </summary>
     public void PostCart(CartPayload payload, Action<string> onSuccess = null, Action<string> onError = null)
     {
         StartCoroutine(PostCartRoutine(payload, onSuccess, onError));
@@ -90,25 +84,27 @@ public class APIManager : MonoBehaviour
         string bodyJson = JsonUtility.ToJson(payload);
         byte[] bodyRaw = Encoding.UTF8.GetBytes(bodyJson);
 
-        using UnityWebRequest req = new UnityWebRequest(BASE_URL, "POST");
+        using UnityWebRequest req = new UnityWebRequest(baseUrl, "POST");
         req.uploadHandler = new UploadHandlerRaw(bodyRaw);
         req.downloadHandler = new DownloadHandlerBuffer();
         req.SetRequestHeader("Content-Type", "application/json");
 
         yield return req.SendWebRequest();
 
+        if (req.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError($"[APIManager] POST gagal: {req.error}");
+            onError?.Invoke(req.error);
+            yield break;
+        }
+
         string response = req.downloadHandler.text;
-        Debug.Log($"[APIManager] POST cart berhasil. Response: {response}");
+        Debug.Log($"[APIManager] POST berhasil: {response}");
         onSuccess?.Invoke(response);
     }
 
-    // ── Key Remapper ─────────────────────────────────────────
+    // ── Remap ─────────────────────────────────────────────────
 
-    /// <summary>
-    /// Ganti JSON key dari API (punya spasi / trailing space) ke nama field
-    /// yang valid untuk JsonUtility. Urutan replace penting — lebih spesifik dulu.
-    /// Kalau API nambah field baru, cukup tambah baris Replace di sini.
-    /// </summary>
     private static string RemapJsonKeys(string json)
     {
         return json
@@ -126,16 +122,9 @@ public class APIManager : MonoBehaviour
             .Replace("\"total_per_rak\"", "\"totalPerRak\"")
             .Replace("\"urutan_rak\"", "\"urutanRak\"")
             .Replace("\"jumlah_baris\"", "\"jumlahBaris\"");
-        // "id", "varian", "created_at", "updated_at" tidak perlu diremap
     }
 }
 
-// ── Cart Payload ─────────────────────────────────────────────
-
-/// <summary>
-/// Struktur data yang dikirim ke API saat player checkout.
-/// Sesuaikan field names dengan dokumentasi API cart JTV nanti.
-/// </summary>
 [System.Serializable]
 public class CartPayload
 {
