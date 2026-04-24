@@ -17,7 +17,6 @@ public class APIManager : MonoBehaviour
     }
 
     // ── Config ───────────────────────────────────────────────
-    // FIX: const tidak bisa [SerializeField] — pakai string biasa
     [Header("API Config")]
     [SerializeField] private string baseUrl = "https://plus.jtv.co.id/Apigame/game_object";
 
@@ -125,20 +124,35 @@ public class APIManager : MonoBehaviour
     }
 }
 
+/// <summary>
+/// Root payload yang dikirim ke endpoint POST.
+/// Dibangun oleh CartSystem.BuildPayload(GameCashierData session).
+/// </summary>
 [System.Serializable]
 public class CartPayload
 {
+    // ── Dari GameCashierData (sesi game) ──────────────────────
     public string playerId;
-    public List<CartItemPayload> items;
+    public string mode;           // "TimeAttack" | "Golek"
+    public float waktuSelesai;    // detik elapsed; 0 kalau Golek
+    public int itemDitemukan;     // diisi dari entries.Count saat BuildPayload
+
+    // ── Dari CartSystem ───────────────────────────────────────
     public float totalHarga;
-    public string timestamp;
+    public string timestamp;      // ISO 8601, waktu submit
+    public List<CartItemPayload> items;
 }
 
+/// <summary>
+/// Satu baris item di dalam CartPayload.items.
+/// </summary>
 [System.Serializable]
 public class CartItemPayload
 {
     public string namaItem;
     public string kategori;
+    public string varian;
+    public int urutanRak;         // untuk server-side verify item valid
     public float harga;
     public int quantity;
 }
