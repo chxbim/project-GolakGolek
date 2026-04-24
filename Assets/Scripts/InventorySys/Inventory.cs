@@ -1,64 +1,91 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// Inventory UI — menampilkan isi CartSystem ke dalam slot-slot di layar.
+/// Inventory TIDAK menyimpan data sendiri; CartSystem adalah sumber kebenaran.
+/// Subscribe ke CartSystem.OnCartChanged, lalu render ulang slot.
+/// </summary>
 public class Inventory : MonoBehaviour
 {
-    public ItemSO TestItem;
-    public GameObject inventorySlotParent;
+    // ── Singleton ────────────────────────────────────────────
+    public static Inventory Instance { get; private set; }
 
-    private List<Slots> inventorySlots = new List<Slots>();
-    private List<Slots> allSlots = new List<Slots>();
+    // ── Inspector ─────────────────────────────────────────────
+    [Header("UI References")]
+    [SerializeField] private GameObject inventorySlotParent;
+
+    [Header("Debug")]
+    [SerializeField] private bool logRefresh = false;
+
+    // ── Runtime ──────────────────────────────────────────────
+    private readonly List<Slots> allSlots = new List<Slots>();
+
+    // ── Lifecycle ─────────────────────────────────────────────
 
     private void Awake()
     {
-        inventorySlots.AddRange(inventorySlotParent.GetComponentInChildren<Slots>());
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
 
-        allSlots.AddRange(inventorySlots);
+        // FIX: GetComponentsInChildren (plural) — versi singular hanya ambil 1 slot pertama!
+        allSlots.AddRange(inventorySlotParent.GetComponentsInChildren<Slots>());
+        Debug.Log($"[Inventory] {allSlots.Count} slot ditemukan.");
     }
 
-    private void Update()
+    private void Start()
     {
-        //aku gtw ini dikasih apa untuk system add barang (seenggaknya dari TestItem dulu)
-        //well... total item e pasti uakeh se..demn..
+        if (CartSystem.Instance == null)
+        {
+            Debug.LogWarning("[Inventory] CartSystem tidak ditemukan di scene. " +
+                             "Pastikan CartSystem ada dan Awake-nya jalan lebih dulu.");
+            return;
+        }
+
+        CartSystem.Instance.OnCartChanged += RefreshFromCart;
+        RefreshFromCart(); // render state awal (biasanya kosong)
     }
 
-    public void AddItem(ItemSO itemToAdd, int amount)
+    private void OnDestroy()
     {
-        int remaining = amount;
+        if (CartSystem.Instance != null)
+            CartSystem.Instance.OnCartChanged -= RefreshFromCart;
+    }
 
+    // ── Core ──────────────────────────────────────────────────
+
+    /// <summary>
+    /// Baca semua entry dari CartSystem dan tampilkan ke slot UI.
+    /// Dipanggil otomatis setiap kali CartSystem berubah.
+    /// </summary>
+    private void RefreshFromCart()
+    {
+        // Reset semua slot
         foreach (Slots slot in allSlots)
+            slot.ClearSlot();
+
+        var entries = CartSystem.Instance.GetEntries();
+
+        for (int i = 0; i < entries.Count; i++)
         {
-            if (slot.HasItem() && slot.GetItem() == itemToAdd)
+            if (i >= allSlots.Count)
             {
-                int currentAmount = slot.GetAmount();
-                int maxStack = itemToAdd.maxStackSize;
-
-                if (currentAmount > maxStack)
-                {
-                    int spaceLeft = maxStack - currentAmount;
-                    int amountToAdd = Mathf.Min(spaceLeft, remaining);
-
-                    slot.SetItem(itemToAdd, currentAmount + amountToAdd);
-                    remaining -= amountToAdd;
-
-                    if (remaining <= 0)
-                        return;
-                }
+                Debug.LogWarning($"[Inventory] Slot tidak cukup! " +
+                                 $"Cart punya {entries.Count} entry, tapi hanya ada {allSlots.Count} slot.");
+                break;
             }
+            allSlots[i].SetItem(entries[i].Item, entries[i].Quantity);
         }
 
-        foreach(Slots slot in allSlots)
-        {
-            if (!slot.HasItem())
-            {
-                int amountToPlace = Mathf.Min(itemToAdd.maxStackSize, remaining);
-                slot.SetItem(itemToAdd, amountToPlace);
-
-                if(remaining <= 0)
-                {
-                    Debug.Log("Inventory penuh, tidak bisa menambahkan " + remaining + itemToAdd.namaItem); //refer ke GameItemData coba nnti
-                }
-            }
-        }
+        if (logRefresh)
+            Debug.Log($"[Inventory] Refresh — {entries.Count} entry ditampilkan di {allSlots.Count} slot.");
     }
+
+    // ── Public helper (opsional, untuk keperluan lain) ────────
+
+    /// <summary>Jumlah slot yang tersedia di UI.</summary>
+    public int SlotCount => allSlots.Count;
+
+    /// <summary>Berapa slot yang sedang terisi.</summary>
+    public int UsedSlotCount => CartSystem.Instance != null ? CartSystem.Instance.GetEntries().Count : 0;
 }

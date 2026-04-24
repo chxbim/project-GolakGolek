@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class Slots : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public bool hovering;
-    private ItemSO holdItem;
+    private GameItemData holdItem;   // ← was: ItemSO
     private int itemAmount;
 
     private Image iconImage;
@@ -18,32 +18,29 @@ public class Slots : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         amountTxt = transform.GetChild(1).GetComponent<TextMeshProUGUI>();
     }
 
-    public ItemSO GetItem()
-    {
-        return holdItem;
-    }
+    public GameItemData GetItem() => holdItem;   // ← was: ItemSO
+    public int GetAmount() => itemAmount;
 
-    public int GetAmount()
-    {
-        return itemAmount;
-    }
-
-    public void SetItem(ItemSO item, int amount = 1)
+    public void SetItem(GameItemData item, int amount = 1)   // ← was: ItemSO
     {
         holdItem = item;
         itemAmount = amount;
-
         UpdateSlot();
     }
 
     public void UpdateSlot()
     {
-        if(holdItem != null)
+        if (holdItem != null)
         {
-        iconImage.enabled = true;
-        iconImage.sprite = holdItem.icon;
-        amountTxt.text = itemAmount.ToString();
-        } else
+            // icon bisa null kalau belum di-assign oleh IconRegistry —
+            // dalam kasus itu slot tetap tampil tapi tanpa gambar
+            iconImage.enabled = holdItem.icon != null;
+            if (holdItem.icon != null)
+                iconImage.sprite = holdItem.icon;
+
+            amountTxt.text = itemAmount > 1 ? itemAmount.ToString() : "";
+        }
+        else
         {
             iconImage.enabled = false;
             amountTxt.text = "";
@@ -61,13 +58,9 @@ public class Slots : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         itemAmount -= amountToRemove;
         if (itemAmount <= 0)
-        {
             ClearSlot();
-        }
         else
-        {
             UpdateSlot();
-        }
         return itemAmount;
     }
 
@@ -78,18 +71,8 @@ public class Slots : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         UpdateSlot();
     }
 
-    public bool HasItem()
-    {
-        return holdItem != null;
-    }
+    public bool HasItem() => holdItem != null;
 
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        hovering = true;
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        hovering = false;
-    }
+    public void OnPointerEnter(PointerEventData eventData) => hovering = true;
+    public void OnPointerExit(PointerEventData eventData) => hovering = false;
 }
