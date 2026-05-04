@@ -2,12 +2,11 @@ using UnityEngine;
 
 public enum ShelfType
 {
-    JajanCiki,
-    Minuman,
-    PelengkapDapur,
-    Kulkas,
-    Showcase,
-    Vending
+    Rak_01,
+    Rak_02,
+    Rak_03,
+    Kulkas_01,
+    Kulkas_02
 }
 
 public class ShelfUnit : MonoBehaviour, IInteractable
@@ -18,7 +17,7 @@ public class ShelfUnit : MonoBehaviour, IInteractable
     [SerializeField] private int shelfId = 0;
     // PENTING: shelfId harus sama dengan urutan_rak di API
     // urutan_rak 0 = Saus Berisik, 1 = Saus Huha, dst
-    [SerializeField] private ShelfType shelfType = ShelfType.JajanCiki;
+    [SerializeField] private ShelfType shelfType = ShelfType.Rak_01;
 
     [Header("Fallback — dipakai hanya jika API tidak bisa dijangkau")]
     [SerializeField] private string fallbackNamaItem = "Item Test";
@@ -85,7 +84,7 @@ public class ShelfUnit : MonoBehaviour, IInteractable
 
     private void Start()
     {
-        // Fallback hanya jalan kalau API gagal dan SetItemData belum pernah dipanggil.
+        // Fallback hanya jalan kalau API gagal dan SetItemData gagal dipanggil.
         // Karena API fetch async, Start() jalan duluan — fallback ini akan
         // di-override oleh SetItemData() begitu ShelfManager selesai fetch.
         if (ItemData == null)
