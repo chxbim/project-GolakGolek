@@ -3,7 +3,11 @@
 /// <summary>
 /// Pasang di GameObject parent rak (sama dengan ShelfUnit).
 /// Drag prefab item dari Assets/Art/Props/Prefabs/... ke field ItemPrefab di Inspector.
-/// Posisi spawn dihitung otomatis dari data API saat Play.
+///
+/// Koordinat posisiX/Y/Z dari API = world position item pertama (C1, Level 1).
+/// Item berikutnya dalam 1 baris  : X += jarakHorizontal
+/// Level berikutnya               : Y += jarakVertikal
+/// Z tetap sama untuk semua item.
 /// </summary>
 public class ItemSpawner : MonoBehaviour
 {
@@ -44,26 +48,35 @@ public class ItemSpawner : MonoBehaviour
 
         if (hasSpawned) return;
 
+        // posisiX/Y/Z dari API = world position item pertama (L1, R1, C1)
         Vector3 basePos = new Vector3(itemData.posisiX, itemData.posisiY, itemData.posisiZ);
         int baris = Mathf.Max(1, itemData.jumlahBaris);
         int spawnCount = 0;
 
+        // Debug — konfirmasi nilai yang masuk dari API
+        Debug.Log($"[ItemSpawner] {gameObject.name} basePos={basePos} " +
+                  $"jarakH={itemData.jarakHorizontal} jarakV={itemData.jarakVertikal}");
+
         for (int level = 0; level < levelCount; level++)
         {
-            float levelY = basePos.y + (level * itemData.jarakVertikal);
+            float worldY = basePos.y + (level * itemData.jarakVertikal);
 
             for (int row = 0; row < baris; row++)
             {
                 for (int col = 0; col < itemsPerRow; col++)
                 {
-                    Vector3 localPos = new Vector3(
+                    Vector3 worldPos = new Vector3(
                         basePos.x + (col * itemData.jarakHorizontal),
-                        levelY,
+                        worldY,
                         basePos.z
                     );
-                    Vector3 worldPos = transform.TransformPoint(localPos);
 
-                    GameObject spawned = Instantiate(itemPrefab, worldPos, Quaternion.identity, transform);
+                    // Instantiate dulu tanpa posisi, lalu set eksplisit
+                    // supaya posisi baked di prefab tidak override worldPos
+                    GameObject spawned = Instantiate(itemPrefab);
+                    spawned.transform.position = worldPos;
+                    Debug.Log($"[ItemSpawner] {spawned.name} → set pos {worldPos} → actual {spawned.transform.position}");
+                    spawned.transform.rotation = Quaternion.identity;
                     spawned.name = $"{itemPrefab.name}_L{level + 1}_R{row + 1}_C{col + 1}";
                     spawnCount++;
                 }
@@ -72,10 +85,11 @@ public class ItemSpawner : MonoBehaviour
 
         hasSpawned = true;
         Debug.Log($"[ItemSpawner] {gameObject.name} → spawn {spawnCount}x '{itemPrefab.name}' " +
-                  $"({levelCount} level × {baris} baris × {itemsPerRow} item/baris)");
+                  $"({levelCount} level × {baris} baris × {itemsPerRow} item/baris) " +
+                  $"base world pos: {basePos}");
     }
 
-    // ── Clear (opsional, untuk reload) ───────────────────────
+    // ── Clear ─────────────────────────────────────────────────
 
     public void ClearSpawnedItems()
     {

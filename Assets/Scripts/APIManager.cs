@@ -16,11 +16,8 @@ public class APIManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    // ── Config ───────────────────────────────────────────────
     [Header("API Config")]
     [SerializeField] private string baseUrl = "https://plus.jtv.co.id/Apigame/game_object";
-
-    // ── GET ──────────────────────────────────────────────────
 
     public void FetchItems(Action<List<GameItemData>> onSuccess, Action<string> onError = null)
     {
@@ -42,17 +39,11 @@ public class APIManager : MonoBehaviour
         string rawJson = req.downloadHandler.text;
         Debug.Log($"[APIManager] Raw JSON: {rawJson}");
 
-        // FIX: Remap key snake_case → camelCase supaya JsonUtility bisa baca
         string remapped = RemapJsonKeys(rawJson);
-
-        // FIX: JsonUtility tidak bisa parse array langsung — bungkus dulu
         string wrapped = "{\"items\":" + remapped + "}";
 
         GameItemDataList parsed;
-        try
-        {
-            parsed = JsonUtility.FromJson<GameItemDataList>(wrapped);
-        }
+        try { parsed = JsonUtility.FromJson<GameItemDataList>(wrapped); }
         catch (Exception e)
         {
             Debug.LogError($"[APIManager] Parse error: {e.Message}");
@@ -71,8 +62,6 @@ public class APIManager : MonoBehaviour
         onSuccess?.Invoke(new List<GameItemData>(parsed.items));
     }
 
-    // ── POST ─────────────────────────────────────────────────
-
     public void PostCart(CartPayload payload, Action<string> onSuccess = null, Action<string> onError = null)
     {
         StartCoroutine(PostCartRoutine(payload, onSuccess, onError));
@@ -87,7 +76,6 @@ public class APIManager : MonoBehaviour
         req.uploadHandler = new UploadHandlerRaw(bodyRaw);
         req.downloadHandler = new DownloadHandlerBuffer();
         req.SetRequestHeader("Content-Type", "application/json");
-
         yield return req.SendWebRequest();
 
         if (req.result != UnityWebRequest.Result.Success)
@@ -102,8 +90,6 @@ public class APIManager : MonoBehaviour
         onSuccess?.Invoke(response);
     }
 
-    // ── Remap ─────────────────────────────────────────────────
-
     private static string RemapJsonKeys(string json)
     {
         return json
@@ -113,46 +99,32 @@ public class APIManager : MonoBehaviour
             .Replace("\"object_file_name\"", "\"objectFileName\"")
             .Replace("\"object_kategori\"", "\"objectKategori\"")
             .Replace("\"object_sub_kategori\"", "\"objectSubKategori\"")
-            .Replace("\"posisi_x\"", "\"posisiX\"")
-            .Replace("\"posisi_y\"", "\"posisiY\"")
-            .Replace("\"posisi_z\"", "\"posisiZ\"")
-            .Replace("\"jarak_vertikal\"", "\"jarakVertikal\"")
-            .Replace("\"jarak_horizontal\"", "\"jarakHorizontal\"")
-            .Replace("\"total_per_rak\"", "\"totalPerRak\"")
-            .Replace("\"urutan_rak\"", "\"urutanRak\"")
-            .Replace("\"jumlah_baris\"", "\"jumlahBaris\"");
+            // Numeric fields → Raw suffix karena API return string, bukan number
+            .Replace("\"posisi_x\"", "\"posisiXRaw\"")
+            .Replace("\"posisi_y\"", "\"posisiYRaw\"")
+            .Replace("\"posisi_z\"", "\"posisiZRaw\"")
+            .Replace("\"jarak_vertikal\"", "\"jarakVertikalRaw\"")
+            .Replace("\"jarak_horizontal\"", "\"jarakHorizontalRaw\"")
+            .Replace("\"total_per_rak\"", "\"totalPerRakRaw\"")
+            .Replace("\"urutan_rak\"", "\"urutanRakRaw\"")
+            .Replace("\"jumlah_baris\"", "\"jumlahBarisRaw\"");
     }
 }
 
-/// <summary>
-/// Root payload yang dikirim ke endpoint POST.
-/// Dibangun oleh CartSystem.BuildPayload(GameCashierData session).
-/// </summary>
 [System.Serializable]
 public class CartPayload
 {
-    // ── Dari GameCashierData (sesi game) ──────────────────────
     public string playerId;
-    public string mode;           // "TimeAttack" | "Golek"
-    public float waktuSelesai;    // detik elapsed; 0 kalau Golek
-    public int itemDitemukan;     // diisi dari entries.Count saat BuildPayload
-
-    // ── Dari CartSystem ───────────────────────────────────────
-    public float totalHarga;
-    public string timestamp;      // ISO 8601, waktu submit
     public List<CartItemPayload> items;
+    public float totalHarga;
+    public string timestamp;
 }
 
-/// <summary>
-/// Satu baris item di dalam CartPayload.items.
-/// </summary>
 [System.Serializable]
 public class CartItemPayload
 {
     public string namaItem;
     public string kategori;
-    public string varian;
-    public int urutanRak;         // untuk server-side verify item valid
     public float harga;
     public int quantity;
 }

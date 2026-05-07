@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Auto-discover semua ShelfUnit di scene, lalu cocokkan dengan data API
-/// berdasarkan shelfId (Inspector ShelfUnit) == urutan_rak (API).
-/// Tidak perlu drag manual apapun di Inspector ShelfManager.
+/// Auto-discover semua ShelfUnit di scene.
+/// Cocokkan shelfId (Inspector) dengan urutan_rak (API).
+/// Sekaligus panggil ItemSpawner di GameObject yang sama jika ada.
 /// </summary>
 public class ShelfManager : MonoBehaviour
 {
@@ -25,7 +25,7 @@ public class ShelfManager : MonoBehaviour
     {
         if (logAllItemsOnFetch)
         {
-            Debug.Log($"[ShelfManager] Fetch berhasil — {items.Count} item dari API:");
+            Debug.Log($"[ShelfManager] Fetch berhasil — {items.Count} item:");
             foreach (var item in items)
                 Debug.Log($"   • {item}");
         }
@@ -37,26 +37,33 @@ public class ShelfManager : MonoBehaviour
             if (!lookup.ContainsKey(item.urutanRak))
                 lookup[item.urutanRak] = item;
             else
-                Debug.LogWarning($"[ShelfManager] urutan_rak {item.urutanRak} duplikat di API — '{item.namaItem}' diskip.");
+                Debug.LogWarning($"[ShelfManager] urutan_rak {item.urutanRak} duplikat — '{item.namaItem}' diskip.");
         }
 
-        // Auto-discover semua ShelfUnit di scene
+        // Auto-discover semua ShelfUnit
         ShelfUnit[] allShelves = FindObjectsOfType<ShelfUnit>();
         Debug.Log($"[ShelfManager] Ditemukan {allShelves.Length} ShelfUnit di scene.");
 
         int matched = 0;
         foreach (ShelfUnit shelf in allShelves)
         {
-            if (lookup.TryGetValue(shelf.ShelfId, out GameItemData data))
+            if (!lookup.TryGetValue(shelf.ShelfId, out GameItemData data))
             {
-                shelf.SetItemData(data);
-                matched++;
+                Debug.LogWarning($"[ShelfManager] ShelfUnit '{shelf.DisplayName}' (id={shelf.ShelfId}) " +
+                                 "tidak ada padanannya di API — pakai fallback.");
+                continue;
             }
-            else
-            {
-                Debug.LogWarning($"[ShelfManager] ShelfUnit '{shelf.DisplayName}' (shelfId={shelf.ShelfId}) " +
-                                 "tidak ada padanannya di API — pakai fallback Inspector.");
-            }
+
+            // Inject ke ShelfUnit (interaksi player)
+            shelf.SetItemData(data);
+
+            // Inject ke ItemSpawner di GameObject yang sama (placement mesh)
+            // ItemSpawner opsional — tidak error kalau tidak ada
+            ItemSpawner spawner = shelf.GetComponent<ItemSpawner>();
+            if (spawner != null)
+                spawner.SetItemDataAndSpawn(data);
+
+            matched++;
         }
 
         Debug.Log($"[ShelfManager] {matched}/{allShelves.Length} ShelfUnit berhasil dapat data API.");
@@ -65,6 +72,6 @@ public class ShelfManager : MonoBehaviour
     private void OnFetchError(string error)
     {
         Debug.LogError($"[ShelfManager] Gagal fetch API: {error}\n" +
-                       "Semua ShelfUnit pakai fallback dari Inspector.");
+                       "Semua ShelfUnit pakai fallback Inspector.");
     }
 }

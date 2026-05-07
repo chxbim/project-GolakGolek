@@ -1,58 +1,65 @@
 using UnityEngine;
+using System.Globalization;
 
-/// <summary>
-/// Data satu item dari JSON/API.
-/// Field names harus cocok persis dengan key di Shelves.json (setelah RemapJsonKeys).
-/// </summary>
 [System.Serializable]
 public class GameItemData
 {
     public string id;
-    public string namaItem;           // dari: nama_item
-    public string kategoriBarang;     // dari: kategori_barang
+    public string namaItem;
+    public string kategoriBarang;
     public string varian;
-    public string hargaRaw;           // dari: harga
-    public string objectFileName;     // dari: object_file_name
-    public string objectKategori;     // dari: object_kategori
-    public string objectSubKategori;  // dari: object_sub_kategori
-    public float posisiX;             // dari: posisi_x
-    public float posisiY;             // dari: posisi_y
-    public float posisiZ;             // dari: posisi_z
-    public float jarakVertikal;       // dari: jarak_vertikal
-    public float jarakHorizontal;     // dari: jarak_horizontal
-    public int totalPerRak;           // dari: total_per_rak
-    public int urutanRak;             // dari: urutan_rak  ← kunci matching ke ShelfUnit
-    public int jumlahBaris;           // dari: jumlah_baris
+    public string hargaRaw;
+    public string objectFileName;
+    public string objectKategori;
+    public string objectSubKategori;
 
-    // ── Field non-API (di-set runtime, tidak dari JSON) ──────
+    // Disimpan sebagai string karena API return JSON string, bukan JSON number
+    // JsonUtility tidak bisa auto-parse string → float
+    public string posisiXRaw;
+    public string posisiYRaw;
+    public string posisiZRaw;
+    public string jarakVertikalRaw;
+    public string jarakHorizontalRaw;
+    public string totalPerRakRaw;
+    public string urutanRakRaw;
+    public string jumlahBarisRaw;
+
+    // ── Parsed float properties ───────────────────────────────
+
+    public float Harga => Parse(hargaRaw);
+    public float posisiX => Parse(posisiXRaw);
+    public float posisiY => Parse(posisiYRaw);
+    public float posisiZ => Parse(posisiZRaw);
+    public float jarakVertikal => Parse(jarakVertikalRaw);
+    public float jarakHorizontal => Parse(jarakHorizontalRaw);
+    public int totalPerRak => (int)Parse(totalPerRakRaw);
+    public int urutanRak => (int)Parse(urutanRakRaw);
+    public int jumlahBaris => (int)Parse(jumlahBarisRaw);
+
+    private static float Parse(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return 0f;
+        if (float.TryParse(s, NumberStyles.Float,
+            CultureInfo.InvariantCulture, out float result))
+        {
+            return result;
+        }
+        Debug.LogWarning($"[GameItemData] Gagal parse: '{s}'");
+        return 0f;
+    }
+
     /// <summary>
-    /// Icon untuk Inventory UI. Di-assign setelah fetch via Resources.Load
-    /// atau IconRegistry. JsonUtility mengabaikan field ini secara otomatis
-    /// karena Sprite tidak serializable oleh JsonUtility.
+    /// Icon sprite untuk UI slot inventory.
+    /// Tidak datang dari API — diisi oleh IconRegistry.cs setelah fetch,
+    /// atau di-assign manual via ScriptableObject lookup.
+    /// Boleh null — Slots.cs sudah handle kasus icon null.
     /// </summary>
     [System.NonSerialized] public Sprite icon;
-
-    /// <summary>
-    /// Maksimal stack per slot inventory. Default 99.
-    /// Bisa di-override oleh IconRegistry jika perlu per-item config.
-    /// </summary>
-    [System.NonSerialized] public int maxStackSize = 1;
-
-    // ── Computed ─────────────────────────────────────────────
-    public float Harga
-    {
-        get
-        {
-            if (float.TryParse(hargaRaw, out float result)) return result;
-            return 0f;
-        }
-    }
 
     public override string ToString()
         => $"{namaItem} [{kategoriBarang}] {varian} – Rp {Harga:N0} (rak ke-{urutanRak})";
 }
 
-// ── Wrapper untuk JsonUtility (tidak bisa parse array langsung) ──
 [System.Serializable]
 internal class GameItemDataList
 {
