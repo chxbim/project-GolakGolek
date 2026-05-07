@@ -1,5 +1,9 @@
-# project-GolakGolek
-Lanjutan pengembangan game dalam JTVGame, memadukan branding ke dalam permainan casual di perangkat mobile.
+tetep download Assets/Art di Diversion
 
-Bergenre time-attack X semi-puzzle game serta dipadu familiaritas dan kearifan lokal, pemain dapat berkeliling dalam minimarket dengan beberapa goal acak.
-Rasakan keseruan dan keosnya sendiri!
+patokan di mesh JusJeruk shelfId = 2, hierarchy Rak_01_3
+by default, Player lgsg menghadap Rak3.
+
+di run, log ItemSpawner.cs setPos dan actual udah bner sesuai backend.
+kenapa meshnya ga muncul....
+
+//klo ini selesai, all item bisa ke spawn bener. imma kerja PlayerController + interact ATAU inventorySys dlu
