@@ -6,6 +6,7 @@ public class GameItemData
 {
     public string id;
     public string namaItem;
+    public string displayName;          // riddle name untuk mode Golek ← display_name
     public string kategoriBarang;
     public string varian;
     public string hargaRaw;
@@ -23,6 +24,12 @@ public class GameItemData
     public string totalPerRakRaw;
     public string urutanRakRaw;
     public string jumlahBarisRaw;
+    public string scaleXRaw;            // ← scale_x
+    public string scaleYRaw;            // ← scale_y
+    public string scaleZRaw;            // ← scale_z
+    public string rotateXRaw;           // ← rotate_x  (Euler degrees)
+    public string rotateYRaw;           // ← rotate_y
+    public string rotateZRaw;           // ← rotate_z
 
     // ── Parsed float properties ───────────────────────────────
 
@@ -35,6 +42,12 @@ public class GameItemData
     public int totalPerRak => (int)Parse(totalPerRakRaw);
     public int urutanRak => (int)Parse(urutanRakRaw);
     public int jumlahBaris => (int)Parse(jumlahBarisRaw);
+    public float scaleX => Parse(scaleXRaw);
+    public float scaleY => Parse(scaleYRaw);
+    public float scaleZ => Parse(scaleZRaw);
+    public float rotateX => Parse(rotateXRaw);
+    public float rotateY => Parse(rotateYRaw);
+    public float rotateZ => Parse(rotateZRaw);
 
     private static float Parse(string s)
     {

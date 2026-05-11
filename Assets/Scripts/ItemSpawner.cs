@@ -4,10 +4,12 @@
 /// Pasang di GameObject parent rak (sama dengan ShelfUnit).
 /// Drag prefab item dari Assets/Art/Props/Prefabs/... ke field ItemPrefab di Inspector.
 ///
-/// Koordinat posisiX/Y/Z dari API = world position item pertama (C1, Level 1).
-/// Item berikutnya dalam 1 baris  : X += jarakHorizontal
+/// Koordinat posisiX/Y/Z dari API = local position relative to parent rak (C1, Level 1).
+/// Item berikutnya dalam 1 baris  : Z += jarakHorizontal
 /// Level berikutnya               : Y += jarakVertikal
-/// Z tetap sama untuk semua item.
+/// X tetap sama untuk semua item.
+/// Scale dan rotation per-item dari API (scale_x/y/z, rotate_x/y/z).
+/// Kulkas_02 dan Rak_02 otomatis override levelCount = 1.
 /// </summary>
 public class ItemSpawner : MonoBehaviour
 {
@@ -21,6 +23,22 @@ public class ItemSpawner : MonoBehaviour
 
     private GameItemData itemData;
     private bool hasSpawned = false;
+
+    // ── Awake ─────────────────────────────────────────────────
+
+    private void Awake()
+    {
+        ShelfUnit shelf = GetComponent<ShelfUnit>();
+        if (shelf == null)
+        {
+            Debug.LogWarning($"[ItemSpawner] {gameObject.name} — ShelfUnit tidak ditemukan di GameObject yang sama.");
+            return;
+        }
+
+        // Kulkas_02 dan Rak_02 hanya punya 1 level
+        if (shelf.shelfType == ShelfType.Kulkas_02 || shelf.shelfType == ShelfType.Rak_02)
+            levelCount = 1;
+    }
 
     // ── Dipanggil ShelfManager ────────────────────────────────
 
@@ -48,35 +66,43 @@ public class ItemSpawner : MonoBehaviour
 
         if (hasSpawned) return;
 
-        // posisiX/Y/Z dari API = world position item pertama (L1, R1, C1)
+        // posisiX/Y/Z dari API = local position relative to parent rak (L1, R1, C1)
         Vector3 basePos = new Vector3(itemData.posisiX, itemData.posisiY, itemData.posisiZ);
         int baris = Mathf.Max(1, itemData.jumlahBaris);
         int spawnCount = 0;
 
+        // Scale & rotation dari API; fallback scale ke (1,1,1) kalau DB masih 0
+        Vector3 scale = new Vector3(itemData.scaleX, itemData.scaleY, itemData.scaleZ);
+        if (scale == Vector3.zero) scale = Vector3.one;
+        Quaternion rotation = Quaternion.Euler(itemData.rotateX, itemData.rotateY, itemData.rotateZ);
+
         // Debug — konfirmasi nilai yang masuk dari API
-        Debug.Log($"[ItemSpawner] {gameObject.name} basePos={basePos} " +
-                  $"jarakH={itemData.jarakHorizontal} jarakV={itemData.jarakVertikal}");
+        Debug.Log($"[ItemSpawner] {gameObject.name} baseLocalPos={basePos} " +
+                  $"jarakH(Z)={itemData.jarakHorizontal} jarakV(Y)={itemData.jarakVertikal} " +
+                  $"scale={scale} rotate=({itemData.rotateX},{itemData.rotateY},{itemData.rotateZ})");
 
         for (int level = 0; level < levelCount; level++)
         {
-            float worldY = basePos.y + (level * itemData.jarakVertikal);
+            float localY = basePos.y + (level * itemData.jarakVertikal);
 
             for (int row = 0; row < baris; row++)
             {
                 for (int col = 0; col < itemsPerRow; col++)
                 {
-                    Vector3 worldPos = new Vector3(
-                        basePos.x + (col * itemData.jarakHorizontal),
-                        worldY,
-                        basePos.z
+                    // jarakHorizontal → Z offset (confirmed dari inspector prefab)
+                    Vector3 localPos = new Vector3(
+                        basePos.x,
+                        localY,
+                        basePos.z + (col * itemData.jarakHorizontal)
                     );
 
-                    // Instantiate dulu tanpa posisi, lalu set eksplisit
-                    // supaya posisi baked di prefab tidak override worldPos
-                    GameObject spawned = Instantiate(itemPrefab);
-                    spawned.transform.position = worldPos;
-                    Debug.Log($"[ItemSpawner] {spawned.name} → set pos {worldPos} → actual {spawned.transform.position}");
-                    spawned.transform.rotation = Quaternion.identity;
+                    // Instantiate sebagai child parent rak, set localPosition eksplisit
+                    // supaya prefab baked transform tidak interfere
+                    GameObject spawned = Instantiate(itemPrefab, transform);
+                    spawned.transform.localPosition = localPos;
+                    spawned.transform.localRotation = rotation;
+                    spawned.transform.localScale = scale;
+                    Debug.Log($"[ItemSpawner] {spawned.name} → localPos {localPos} → actual {spawned.transform.localPosition}");
                     spawned.name = $"{itemPrefab.name}_L{level + 1}_R{row + 1}_C{col + 1}";
                     spawnCount++;
                 }
@@ -86,7 +112,7 @@ public class ItemSpawner : MonoBehaviour
         hasSpawned = true;
         Debug.Log($"[ItemSpawner] {gameObject.name} → spawn {spawnCount}x '{itemPrefab.name}' " +
                   $"({levelCount} level × {baris} baris × {itemsPerRow} item/baris) " +
-                  $"base world pos: {basePos}");
+                  $"base local pos: {basePos}");
     }
 
     // ── Clear ─────────────────────────────────────────────────

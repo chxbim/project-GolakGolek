@@ -17,7 +17,7 @@ public class ShelfUnit : MonoBehaviour, IInteractable
     [SerializeField] private int shelfId = 0;
     // PENTING: shelfId harus sama dengan urutan_rak di API
     // urutan_rak 0 = Saus Berisik, 1 = Saus Huha, dst
-    [SerializeField] private ShelfType shelfType = ShelfType.Rak_01;
+    [SerializeField] public ShelfType shelfType = ShelfType.Rak_01;
 
     [Header("Fallback — dipakai hanya jika API tidak bisa dijangkau")]
     [SerializeField] private string fallbackNamaItem = "Item Test";
