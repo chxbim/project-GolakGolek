@@ -40,7 +40,7 @@ public class APIManager : MonoBehaviour
         Debug.Log($"[APIManager] Raw JSON: {rawJson}");
 
         string remapped = RemapJsonKeys(rawJson);
-        string wrapped = "{\"items\":" + remapped + "}";
+        string wrapped  = "{\"items\":" + remapped + "}";
 
         GameItemDataList parsed;
         try { parsed = JsonUtility.FromJson<GameItemDataList>(wrapped); }
@@ -70,10 +70,10 @@ public class APIManager : MonoBehaviour
     private IEnumerator PostCartRoutine(CartPayload payload, Action<string> onSuccess, Action<string> onError)
     {
         string bodyJson = JsonUtility.ToJson(payload);
-        byte[] bodyRaw = Encoding.UTF8.GetBytes(bodyJson);
+        byte[] bodyRaw  = Encoding.UTF8.GetBytes(bodyJson);
 
         using UnityWebRequest req = new UnityWebRequest(baseUrl, "POST");
-        req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        req.uploadHandler   = new UploadHandlerRaw(bodyRaw);
         req.downloadHandler = new DownloadHandlerBuffer();
         req.SetRequestHeader("Content-Type", "application/json");
         yield return req.SendWebRequest();
@@ -93,21 +93,27 @@ public class APIManager : MonoBehaviour
     private static string RemapJsonKeys(string json)
     {
         return json
-            .Replace("\"nama_item\"", "\"namaItem\"")
-            .Replace("\"kategori_barang\"", "\"kategoriBarang\"")
-            .Replace("\"harga\"", "\"hargaRaw\"")
-            .Replace("\"object_file_name\"", "\"objectFileName\"")
-            .Replace("\"object_kategori\"", "\"objectKategori\"")
-            .Replace("\"object_sub_kategori\"", "\"objectSubKategori\"")
-            // Numeric fields → Raw suffix karena API return string, bukan number
-            .Replace("\"posisi_x\"", "\"posisiXRaw\"")
-            .Replace("\"posisi_y\"", "\"posisiYRaw\"")
-            .Replace("\"posisi_z\"", "\"posisiZRaw\"")
-            .Replace("\"jarak_vertikal\"", "\"jarakVertikalRaw\"")
-            .Replace("\"jarak_horizontal\"", "\"jarakHorizontalRaw\"")
-            .Replace("\"total_per_rak\"", "\"totalPerRakRaw\"")
-            .Replace("\"urutan_rak\"", "\"urutanRakRaw\"")
-            .Replace("\"jumlah_baris\"", "\"jumlahBarisRaw\"");
+            .Replace("\"nama_item\"",           "\"namaItem\"")
+            .Replace("\"display_name\"",         "\"displayName\"")
+            .Replace("\"kategori_barang\"",      "\"kategoriBarang\"")
+            .Replace("\"harga\"",                "\"hargaRaw\"")
+            .Replace("\"object_file_name\"",     "\"objectFileName\"")
+            .Replace("\"object_kategori\"",      "\"objectKategori\"")
+            .Replace("\"object_sub_kategori\"",  "\"objectSubKategori\"")
+            .Replace("\"posisi_x\"",             "\"posisiXRaw\"")
+            .Replace("\"posisi_y\"",             "\"posisiYRaw\"")
+            .Replace("\"posisi_z\"",             "\"posisiZRaw\"")
+            .Replace("\"jarak_vertikal\"",       "\"jarakVertikalRaw\"")
+            .Replace("\"jarak_horizontal\"",     "\"jarakHorizontalRaw\"")
+            .Replace("\"total_per_rak\"",        "\"totalPerRakRaw\"")
+            .Replace("\"urutan_rak\"",           "\"urutanRakRaw\"")
+            .Replace("\"jumlah_baris\"",         "\"jumlahBarisRaw\"")
+            .Replace("\"scale_x\"",              "\"scaleXRaw\"")
+            .Replace("\"scale_y\"",              "\"scaleYRaw\"")
+            .Replace("\"scale_z\"",              "\"scaleZRaw\"")
+            .Replace("\"rotate_x\"",             "\"rotateXRaw\"")
+            .Replace("\"rotate_y\"",             "\"rotateYRaw\"")
+            .Replace("\"rotate_z\"",             "\"rotateZRaw\"");
     }
 }
 
@@ -125,6 +131,6 @@ public class CartItemPayload
 {
     public string namaItem;
     public string kategori;
-    public float harga;
-    public int quantity;
+    public float  harga;
+    public int    quantity;
 }
