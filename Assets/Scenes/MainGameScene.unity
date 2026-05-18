@@ -722,15 +722,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 59471061}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
-  m_LocalPosition: {x: -93.51, y: 4.15, z: -52.03}
+  m_LocalRotation: {x: -0, y: 0.9996654, z: -0, w: 0.025866784}
+  m_LocalPosition: {x: -105, y: 3.48, z: -47.826942}
   m_LocalScale: {x: 3.5, y: 3.5, z: 3.5}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1094154685}
   - {fileID: 509669675}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 177.036, z: 0}
 --- !u!114 &59471066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -905,6 +905,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 75355030}
+  - component: {fileID: 75355032}
+  - component: {fileID: 75355031}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_33
   m_TagString: Untagged
@@ -929,6 +931,38 @@ Transform:
   - {fileID: 2402017}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &75355031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 75355029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
+  shelfId: 33
+  shelfType: 0
+  fallbackNamaItem: Item Test
+  fallbackHarga: 5000
+  fallbackKategori: Umum
+--- !u!114 &75355032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 75355029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 4635061923135306183, guid: b11f09c84fa46a44e8d382a2cc6daeda, type: 3}
+  levelCount: 3
+  itemsPerRow: 5
 --- !u!1 &98070020
 GameObject:
   m_ObjectHideFlags: 0
@@ -1560,6 +1594,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 212815235}
+  - component: {fileID: 212815237}
+  - component: {fileID: 212815236}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_32
   m_TagString: Untagged
@@ -1584,6 +1620,38 @@ Transform:
   - {fileID: 169885178}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &212815236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 212815234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
+  shelfId: 32
+  shelfType: 0
+  fallbackNamaItem: Item Test
+  fallbackHarga: 5000
+  fallbackKategori: Umum
+--- !u!114 &212815237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 212815234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 295881602913309424, guid: 1029fa6d5c6fc0f44bb200e8c58feea8, type: 3}
+  levelCount: 3
+  itemsPerRow: 3
 --- !u!1 &221538732
 GameObject:
   m_ObjectHideFlags: 0
@@ -1865,7 +1933,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1852993303}
   - {fileID: 612676233}
   - {fileID: 1069579317}
   m_Father: {fileID: 1542006760}
@@ -1901,7 +1968,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
   itemPrefab: {fileID: 8259483234714724186, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
   levelCount: 3
-  itemsPerRow: 3
+  itemsPerRow: 5
 --- !u!1001 &243421196
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2159,7 +2226,7 @@ GameObject:
   m_Component:
   - component: {fileID: 262490343}
   - component: {fileID: 262490345}
-  - component: {fileID: 262490344}
+  - component: {fileID: 262490346}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_16
   m_TagString: Untagged
@@ -2184,21 +2251,6 @@ Transform:
   - {fileID: 1095785697}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &262490344
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 262490342}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 702b57f41b3c78f49937092908b43341, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawner
-  itemPrefab: {fileID: 0}
-  levelCount: 3
-  itemsPerRow: 3
 --- !u!114 &262490345
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2211,11 +2263,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
-  shelfId: 0
+  shelfId: 25
   shelfType: 0
   fallbackNamaItem: Item Test
   fallbackHarga: 5000
   fallbackKategori: Umum
+--- !u!114 &262490346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 262490342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 1856032102889992386, guid: 8218a9d826cede747874da5f6b03ca04, type: 3}
+  levelCount: 3
+  itemsPerRow: 5
 --- !u!1001 &265460396
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2531,7 +2598,7 @@ GameObject:
   m_Component:
   - component: {fileID: 287697470}
   - component: {fileID: 287697472}
-  - component: {fileID: 287697471}
+  - component: {fileID: 287697473}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_15
   m_TagString: Untagged
@@ -2556,21 +2623,6 @@ Transform:
   - {fileID: 2109541370}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &287697471
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 287697469}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 702b57f41b3c78f49937092908b43341, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawner
-  itemPrefab: {fileID: 0}
-  levelCount: 3
-  itemsPerRow: 3
 --- !u!114 &287697472
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2583,11 +2635,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
-  shelfId: 0
+  shelfId: 24
   shelfType: 0
   fallbackNamaItem: Item Test
   fallbackHarga: 5000
   fallbackKategori: Umum
+--- !u!114 &287697473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 287697469}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 3432583687501855494, guid: dbe12cfd93861cc449b9be3fa95e219c, type: 3}
+  levelCount: 3
+  itemsPerRow: 3
 --- !u!1 &292313725
 GameObject:
   m_ObjectHideFlags: 0
@@ -2597,6 +2664,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 292313726}
+  - component: {fileID: 292313728}
+  - component: {fileID: 292313727}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_17
   m_TagString: Untagged
@@ -2621,6 +2690,38 @@ Transform:
   - {fileID: 804718074}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &292313727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 292313725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
+  shelfId: 26
+  shelfType: 0
+  fallbackNamaItem: Item Test
+  fallbackHarga: 5000
+  fallbackKategori: Umum
+--- !u!114 &292313728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 292313725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 5644933592558087192, guid: b44ac3daf7f228f49aefd1a471b28eea, type: 3}
+  levelCount: 3
+  itemsPerRow: 5
 --- !u!4 &299096093 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8090277161237924344, guid: 0b7a83c9075de0043bff54ba36db6c77, type: 3}
@@ -2861,8 +2962,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0023468442, y: 0.9653297, z: -0.26087865, w: -0.008684031}
-  m_LocalPosition: {x: -93.41, y: 9.4, z: -48.03}
+  m_LocalRotation: {x: 0.0044019483, y: 0.96523136, z: -0.26085198, w: 0.016288545}
+  m_LocalPosition: {x: -105.106995, y: 8.73, z: -43.82712}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3095,7 +3196,7 @@ GameObject:
   m_Component:
   - component: {fileID: 365375245}
   - component: {fileID: 365375247}
-  - component: {fileID: 365375246}
+  - component: {fileID: 365375248}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_13
   m_TagString: Untagged
@@ -3120,21 +3221,6 @@ Transform:
   - {fileID: 730684483}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &365375246
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 365375244}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 702b57f41b3c78f49937092908b43341, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawner
-  itemPrefab: {fileID: 0}
-  levelCount: 3
-  itemsPerRow: 3
 --- !u!114 &365375247
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3147,11 +3233,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
-  shelfId: 0
+  shelfId: 22
   shelfType: 0
   fallbackNamaItem: Item Test
   fallbackHarga: 5000
   fallbackKategori: Umum
+--- !u!114 &365375248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 365375244}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 8692802331347425606, guid: 8ab2f10ddaefa2847ae667adb9d4af92, type: 3}
+  levelCount: 3
+  itemsPerRow: 3
 --- !u!1 &373101152
 GameObject:
   m_ObjectHideFlags: 0
@@ -3960,6 +4061,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 433788822}
+  - component: {fileID: 433788824}
+  - component: {fileID: 433788823}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_19
   m_TagString: Untagged
@@ -3984,6 +4087,38 @@ Transform:
   - {fileID: 894489765}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &433788823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 433788821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
+  shelfId: 28
+  shelfType: 0
+  fallbackNamaItem: Item Test
+  fallbackHarga: 5000
+  fallbackKategori: Umum
+--- !u!114 &433788824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 433788821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 4815445600608114714, guid: b6427de1b6948cd42ad60212e8ce9cd9, type: 3}
+  levelCount: 3
+  itemsPerRow: 6
 --- !u!1 &439432115
 GameObject:
   m_ObjectHideFlags: 0
@@ -4266,6 +4401,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 488581634}
+  - component: {fileID: 488581636}
+  - component: {fileID: 488581635}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_30
   m_TagString: Untagged
@@ -4290,6 +4427,38 @@ Transform:
   - {fileID: 510154652}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &488581635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 488581633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
+  shelfId: 30
+  shelfType: 0
+  fallbackNamaItem: Item Test
+  fallbackHarga: 5000
+  fallbackKategori: Umum
+--- !u!114 &488581636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 488581633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 1200903591147895126, guid: 1d12985c97f6d7442a768865b1d1b169, type: 3}
+  levelCount: 3
+  itemsPerRow: 6
 --- !u!1 &490697066
 GameObject:
   m_ObjectHideFlags: 0
@@ -5254,7 +5423,7 @@ GameObject:
   m_Component:
   - component: {fileID: 653166375}
   - component: {fileID: 653166377}
-  - component: {fileID: 653166376}
+  - component: {fileID: 653166378}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_12
   m_TagString: Untagged
@@ -5279,21 +5448,6 @@ Transform:
   - {fileID: 286105776}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &653166376
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 653166374}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 702b57f41b3c78f49937092908b43341, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawner
-  itemPrefab: {fileID: 0}
-  levelCount: 3
-  itemsPerRow: 3
 --- !u!114 &653166377
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5306,11 +5460,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
-  shelfId: 0
+  shelfId: 21
   shelfType: 0
   fallbackNamaItem: Item Test
   fallbackHarga: 5000
   fallbackKategori: Umum
+--- !u!114 &653166378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653166374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 8346170595322636398, guid: 12ccb3f06f5989e499425b62e49f0aa0, type: 3}
+  levelCount: 3
+  itemsPerRow: 3
 --- !u!1001 &658244960
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9026,7 +9195,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1056598696}
   - component: {fileID: 1056598698}
-  - component: {fileID: 1056598697}
+  - component: {fileID: 1056598699}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_14
   m_TagString: Untagged
@@ -9051,21 +9220,6 @@ Transform:
   - {fileID: 439432116}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1056598697
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1056598695}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 702b57f41b3c78f49937092908b43341, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawner
-  itemPrefab: {fileID: 0}
-  levelCount: 3
-  itemsPerRow: 3
 --- !u!114 &1056598698
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9078,11 +9232,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
-  shelfId: 0
+  shelfId: 23
   shelfType: 0
   fallbackNamaItem: Item Test
   fallbackHarga: 5000
   fallbackKategori: Umum
+--- !u!114 &1056598699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1056598695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 1302430877203658697, guid: 33a42698e7bdf824ea9701b210e19c6f, type: 3}
+  levelCount: 3
+  itemsPerRow: 3
 --- !u!1 &1069579316
 GameObject:
   m_ObjectHideFlags: 0
@@ -10100,6 +10269,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1133672093}
+  - component: {fileID: 1133672095}
+  - component: {fileID: 1133672094}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_31
   m_TagString: Untagged
@@ -10124,6 +10295,38 @@ Transform:
   - {fileID: 689563986}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1133672094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1133672092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
+  shelfId: 31
+  shelfType: 0
+  fallbackNamaItem: Item Test
+  fallbackHarga: 5000
+  fallbackKategori: Umum
+--- !u!114 &1133672095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1133672092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 4686308352776273307, guid: ac7dde88f16121f47ad866029f6ee527, type: 3}
+  levelCount: 3
+  itemsPerRow: 3
 --- !u!1001 &1139820841
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10413,7 +10616,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1167261100}
-  - component: {fileID: 1167261102}
+  - component: {fileID: 1167261103}
   - component: {fileID: 1167261101}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_10
@@ -10451,12 +10654,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
-  shelfId: 0
+  shelfId: 19
   shelfType: 0
   fallbackNamaItem: Item Test
   fallbackHarga: 5000
   fallbackKategori: Umum
---- !u!114 &1167261102
+--- !u!114 &1167261103
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10465,12 +10668,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1167261099}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 702b57f41b3c78f49937092908b43341, type: 3}
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawner
-  itemPrefab: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 8997453260422790047, guid: 2595ed1b40764ab4291a712750018315, type: 3}
   levelCount: 3
-  itemsPerRow: 3
+  itemsPerRow: 5
 --- !u!1 &1174429704
 GameObject:
   m_ObjectHideFlags: 0
@@ -11870,8 +12073,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1356735143}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0023468444, y: 0.9653297, z: -0.26087868, w: -0.008684032}
-  m_LocalPosition: {x: -93.41, y: 9.4, z: -48.03}
+  m_LocalRotation: {x: 0.0044019506, y: 0.9652314, z: -0.260852, w: 0.016288549}
+  m_LocalPosition: {x: -105.106995, y: 8.73, z: -43.82712}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -13593,75 +13796,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6880507039719565868, guid: 1982c8fc92d152e4abd74d72814ccfc9, type: 3}
   m_PrefabInstance: {fileID: 1648535215}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &1665825480
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 234970292}
-    m_Modifications:
-    - target: {fileID: 8259483234714724186, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_Name
-      value: P_SardenSausTomat
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 11
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 2.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -49
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: -4.3297806e-17
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -4.3297806e-17
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
 --- !u!1001 &1669455012
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13741,7 +13875,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1671133402}
   - component: {fileID: 1671133404}
-  - component: {fileID: 1671133403}
+  - component: {fileID: 1671133405}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_11
   m_TagString: Untagged
@@ -13766,21 +13900,6 @@ Transform:
   - {fileID: 1608023456}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1671133403
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1671133401}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 702b57f41b3c78f49937092908b43341, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawner
-  itemPrefab: {fileID: 0}
-  levelCount: 3
-  itemsPerRow: 3
 --- !u!114 &1671133404
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13793,11 +13912,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
-  shelfId: 0
+  shelfId: 20
   shelfType: 0
   fallbackNamaItem: Item Test
   fallbackHarga: 5000
   fallbackKategori: Umum
+--- !u!114 &1671133405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1671133401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 6018220530707844250, guid: 3a9eb4da2ebf54c4ba435f23e7e0b5ba, type: 3}
+  levelCount: 3
+  itemsPerRow: 3
 --- !u!1001 &1674884221
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14891,6 +15025,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1799014279}
+  - component: {fileID: 1799014281}
+  - component: {fileID: 1799014280}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_20
   m_TagString: Untagged
@@ -14915,6 +15051,38 @@ Transform:
   - {fileID: 116927149}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1799014280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1799014278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
+  shelfId: 29
+  shelfType: 0
+  fallbackNamaItem: Item Test
+  fallbackHarga: 5000
+  fallbackKategori: Umum
+--- !u!114 &1799014281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1799014278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 6960142201530997369, guid: 7a32e66e8e823b241894b8d3aee396fd, type: 3}
+  levelCount: 3
+  itemsPerRow: 6
 --- !u!1001 &1806786129
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15393,6 +15561,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1829306119}
+  - component: {fileID: 1829306121}
+  - component: {fileID: 1829306120}
   m_Layer: 0
   m_Name: P_Envi_Furniture_Rak_01_18
   m_TagString: Untagged
@@ -15417,6 +15587,38 @@ Transform:
   - {fileID: 221538733}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1829306120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1829306118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1823fb84dc28f7e43b94be6d883b9d3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShelfUnit
+  shelfId: 27
+  shelfType: 0
+  fallbackNamaItem: Item Test
+  fallbackHarga: 5000
+  fallbackKategori: Umum
+--- !u!114 &1829306121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1829306118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04d10b3f4df76343b474c26a6428edd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSpawnerHorizontalX
+  itemPrefab: {fileID: 5777913129319801206, guid: d94a3a9938be6c1448abffa23a3224a3, type: 3}
+  levelCount: 3
+  itemsPerRow: 3
 --- !u!1001 &1840914589
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15741,11 +15943,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1850119619}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &1852993303 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 8778716964618468832, guid: a6c89c2187c2f204d8e9cf230a560fa3, type: 3}
-  m_PrefabInstance: {fileID: 1665825480}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1873871479
 PrefabInstance:
   m_ObjectHideFlags: 0
