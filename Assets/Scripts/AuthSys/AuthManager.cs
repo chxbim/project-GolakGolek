@@ -11,9 +11,9 @@ public class AuthManager : MonoBehaviour
     public TMP_InputField emailLoginField;
     public TMP_InputField passwordLoginField;
 
-    [Header("Feedback")]
-    public TMP_Text warningLoginText;   // error message — default hidden
-    public TMP_Text confirmLoginText;   // "Memuat..." — default hidden
+    [Header("Feedback (Image GameObjects)")]
+    public GameObject warningImage;    // Image asset TxtWarning — default inactive di hierarchy
+    public GameObject confirmImage;    // Image asset TxtConfirm — default active, di-hide pas Start
 
     [Header("UI")]
     public UnityEngine.UI.Button loginButton;
@@ -47,9 +47,9 @@ public class AuthManager : MonoBehaviour
     // ── Unity ────────────────────────────────────────────────────
     private void Start()
     {
-        // Sembunyikan feedback text di awal
-        SetWarning("");
-        SetConfirm("");
+        // Sembunyikan kedua image feedback di awal
+        if (warningImage != null) warningImage.SetActive(false);
+        if (confirmImage != null) confirmImage.SetActive(false);
     }
 
     // ── Public — dipanggil Button onClick ────────────────────────
@@ -61,16 +61,16 @@ public class AuthManager : MonoBehaviour
         // Validasi input kosong sebelum hit API
         if (string.IsNullOrEmpty(email))
         {
-            SetWarning("Email tidak boleh kosong.");
+            SetWarning(true);
             return;
         }
         if (string.IsNullOrEmpty(password))
         {
-            SetWarning("Password tidak boleh kosong.");
+            SetWarning(true);
             return;
         }
 
-        SetWarning("");
+        SetWarning(false);
         StartCoroutine(PostLogin(email, password));
     }
 
@@ -83,7 +83,8 @@ public class AuthManager : MonoBehaviour
         WWWForm form = new WWWForm();
         form.AddField("email", email);
         form.AddField("password", password);
-        form.AddField("device_name", "GolakGolek");
+        form.AddField("device_uuid", "67");           // 67 — hardcoded, bypass SystemInfo.deviceUniqueIdentifier
+        form.AddField("device_name", "yes");          // yes — hardcoded static, sama kek uuid
         form.AddField("platform", "Android");
         form.AddField("app_id", "game_GolakGolek");
 
@@ -97,7 +98,7 @@ public class AuthManager : MonoBehaviour
         if (req.result != UnityWebRequest.Result.Success)
         {
             // Network error atau server error (4xx/5xx)
-            SetWarning("Koneksi gagal. Coba lagi.");
+            SetWarning(true);
             Debug.LogWarning($"[AuthManager] HTTP Error: {req.responseCode} — {req.error}");
             yield break;
         }
@@ -113,7 +114,7 @@ public class AuthManager : MonoBehaviour
         }
         catch (System.Exception ex)
         {
-            SetWarning("Terjadi kesalahan. Coba lagi.");
+            SetWarning(true);
             Debug.LogError($"[AuthManager] Parse error: {ex.Message}");
             yield break;
         }
@@ -121,7 +122,7 @@ public class AuthManager : MonoBehaviour
         // Cek apakah token ada (guard kalau server kirim 200 tapi response salah)
         if (response == null || string.IsNullOrEmpty(response.access_token))
         {
-            SetWarning("Email atau password salah.");
+            SetWarning(true);
             yield break;
         }
 
@@ -136,10 +137,10 @@ public class AuthManager : MonoBehaviour
 
         Debug.Log($"[AuthManager] Login berhasil. User: {response.user.name} (id: {response.user.id})");
 
-        SetConfirm("Login berhasil! Memuat...");
+        SetConfirm(true); // tampilkan image "Login berhasil"
 
         // Jeda singkat supaya user sempat baca konfirmasi
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(0.9f);
 
         SceneManager.LoadScene(sceneAfterLogin);
     }
@@ -148,20 +149,16 @@ public class AuthManager : MonoBehaviour
     private void SetLoadingState(bool loading)
     {
         if (loginButton != null) loginButton.interactable = !loading;
-        SetConfirm(loading ? "Memuat..." : "");
+        SetConfirm(loading);
     }
 
-    private void SetWarning(string msg)
+    private void SetWarning(bool show)
     {
-        if (warningLoginText == null) return;
-        warningLoginText.text = msg;
-        warningLoginText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
+        if (warningImage != null) warningImage.SetActive(show);
     }
 
-    private void SetConfirm(string msg)
+    private void SetConfirm(bool show)
     {
-        if (confirmLoginText == null) return;
-        confirmLoginText.text = msg;
-        confirmLoginText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
+        if (confirmImage != null) confirmImage.SetActive(show);
     }
 }
