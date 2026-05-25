@@ -30,6 +30,15 @@ public class SceneLoader : MonoBehaviour
         }
     }
 
+    [Header("Session")]
+    [SerializeField] private bool checkSessionOnStart = false;
+
+    private void Start()
+    {
+        if (checkSessionOnStart)
+            CheckSessionAndRoute();
+    }
+
     // ── Navigation ───────────────────────────────────────────────
 
     public void LoadMainGame()
