@@ -4,6 +4,9 @@ using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using TMPro;
 
+//lgsg pilih scene aja kalo udah login, simpen di PlayerPref
+//point di Hub, coin di game
+
 public class AuthManager : MonoBehaviour
 {
     // ── Inspector ────────────────────────────────────────────────
@@ -23,7 +26,7 @@ public class AuthManager : MonoBehaviour
     public string sceneAfterLogin = "SelectMode";
 
     // ── Endpoint ─────────────────────────────────────────────────
-    private const string LOGIN_URL = "https://hub.jtv.co.id/api/login";
+    private const string LOGIN_URL = "https://sso.jtv.co.id/api/login";
 
     // ── Response model ───────────────────────────────────────────
     [System.Serializable]
@@ -140,7 +143,7 @@ public class AuthManager : MonoBehaviour
         SetConfirm(true); // tampilkan image "Login berhasil"
 
         // Jeda singkat supaya user sempat baca konfirmasi
-        yield return new WaitForSeconds(0.9f);
+        yield return new WaitForSeconds(0.6f);
 
         SceneManager.LoadScene(sceneAfterLogin);
     }
