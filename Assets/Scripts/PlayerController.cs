@@ -1,53 +1,80 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
-using TouchPhase = UnityEngine.TouchPhase;
+using InputTouchPhase = UnityEngine.InputSystem.TouchPhase;
 
+/// <summary>
+/// PlayerController — GolakGolek v2
+///
+/// DEPENDENCIES:
+///  - CharacterController di GameObject yang sama
+///  - PlayerInputControl (generated dari Input Action Asset)
+///  - ShelfUnit harus punya static event OnPlayerRangeChanged (lihat catatan di bawah)
+///  - HeadPoint: empty child GO di posisi "kepala" player
+///  - CameraRoot: empty child GO di posisi badan, yang di-rotate untuk orbit cam
+///
+/// TOUCH DESIGN (screen split):
+///  - Kiri layar  → wilayah joystick, biarkan OnScreenStick yang handle
+///  - Kanan layar → PlayerController track untuk camera orbit + tap interact
+/// </summary>
+[RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
-    private CharacterController controller;
+    // ──────────────────────────────────────────────
+    //  INSPECTOR FIELDS
+    // ──────────────────────────────────────────────
+
+    [Header("References")]
+    [SerializeField] private Transform cameraRoot;      // Child kosong yg dirotasi untuk orbit camera
+    [SerializeField] private Transform headPoint;       // Origin raycast interact (posisi kepala)
+    [SerializeField] private Camera mainCamera;
+    [SerializeField] private GameObject interactButton; // UI Button, diatur SetActive(true/false)
 
     [Header("Movement")]
-    [SerializeField] private float walkSpeed = 5f;
-    [SerializeField] private float turningSpeed = 10f;
-
-    [Header("Jump")]
-    [SerializeField] private float jumpForce = 5f;
+    [SerializeField] private float walkSpeed = 7f;
+    [SerializeField] private float bodyTurnSpeed = 9f; // Seberapa cepat badan player balik ke arah gerak
 
     [Header("Physics")]
     [SerializeField] private float gravity = 9.81f;
 
-    [Header("Interact & Look")]
-    [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private Camera mainCamera;
-    [SerializeField] private float tapMoveThreshold = 15f;
+    [Header("Camera Orbit")]
+    [SerializeField] private float lookSensitivity = 0.3f;
+    [SerializeField] private float maxPitchUp = 50f;
+    [SerializeField] private float maxPitchDown = -20f;
 
-    [Header("Camera Look")]
-    [SerializeField] private Transform cameraTransform;
-    [SerializeField] private float lookSensitivity = 0.5f;
-    [SerializeField] private float maxPitchUp = 60f;
-    [SerializeField] private float maxPitchDown = -30f;
+    [Header("Interact (Raycast dari HeadPoint)")]
+    [SerializeField] private float interactRayLength = 3f;
+    [SerializeField] private LayerMask interactLayer;   // Layer ProximityDetector collider
 
-    // Input
+    [Header("Touch")]
+    [Tooltip("Berapa pixel drift sebelum touch dianggap drag (bukan tap)")]
+    [SerializeField] private float tapMoveThreshold = 25f;
+
+    // ──────────────────────────────────────────────
+    //  PRIVATE STATE
+    // ──────────────────────────────────────────────
+
+    private CharacterController controller;
     private PlayerInputControl inputActions;
+
+    // Movement
     private Vector2 moveInput;
     private float verticalVelocity;
 
-    // Look state
-    private float yaw = 0f;
-    private float pitch = 0f;
+    // Camera orbit
+    private float yaw;
+    private float pitch;
 
-    // Finger tracking — pakai New Input System touch
+    // Touch tracking (kanan layar + joystick)
     private int activeFingerId = -1;
+    private int joystickFingerId = -1;
     private Vector2 fingerStartPos;
     private Vector2 fingerLastPos;
-    private bool fingerMoved = false;
+    private bool fingerMoved;
 
-    [Header("Visual Feedback (Opsional)")]
-    [SerializeField] private GameObject tapIndicatorPrefab;
-    private GameObject currentIndicator;
+    // Interact
+    private ShelfUnit currentNearbyShelf;
+    private bool interactButtonVisible;
 
     // ──────────────────────────────────────────────
     //  INIT
@@ -61,28 +88,28 @@ public class PlayerController : MonoBehaviour
     private void OnEnable()
     {
         inputActions.Player.Enable();
-        inputActions.Player.Jump.performed += OnJump;
+
+        // Subscribe ke event ShelfUnit — tau kapan player masuk/keluar zona rak
+        ShelfUnit.OnPlayerRangeChanged += HandleShelfRangeChanged;
     }
 
     private void OnDisable()
     {
-        inputActions.Player.Jump.performed -= OnJump;
         inputActions.Player.Disable();
+        ShelfUnit.OnPlayerRangeChanged -= HandleShelfRangeChanged;
     }
 
     private void Start()
     {
         controller = GetComponent<CharacterController>();
 
-        if (mainCamera == null) mainCamera = Camera.main;
-        if (cameraTransform == null && mainCamera != null)
-            cameraTransform = mainCamera.transform;
+        if (mainCamera == null)
+            mainCamera = Camera.main;
 
-        if (cameraTransform != null)
-        {
-            yaw = cameraTransform.eulerAngles.y;
-            pitch = cameraTransform.eulerAngles.x;
-        }
+        // Inisialisasi yaw dari rotasi saat ini supaya kamera tidak jump
+        yaw = transform.eulerAngles.y;
+
+        SetInteractButton(false);
     }
 
     // ──────────────────────────────────────────────
@@ -91,56 +118,84 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        HandleLookAndInteract();
-        MoveWithJoystick();
+        HandleTouch();
+        MovePlayer();
         ApplyGravity();
+        ValidateInteract();
     }
 
     // ──────────────────────────────────────────────
-    //  JOYSTICK MOVEMENT
+    //  MOVEMENT — relatif ke arah kamera
     // ──────────────────────────────────────────────
 
-    private void MoveWithJoystick()
+    private void MovePlayer()
     {
         moveInput = inputActions.Player.Move.ReadValue<Vector2>();
 
-        transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+        Vector3 velocity = Vector3.zero;
 
-        if (moveInput.sqrMagnitude < 0.01f) return;
+        if (moveInput.sqrMagnitude >= 0.01f)
+        {
+            Vector3 camForward = Vector3.ProjectOnPlane(mainCamera.transform.forward, Vector3.up).normalized;
+            Vector3 camRight = Vector3.ProjectOnPlane(mainCamera.transform.right, Vector3.up).normalized;
+            Vector3 moveDir = (camForward * moveInput.y + camRight * moveInput.x).normalized;
 
-        Vector3 moveDir = (transform.forward * moveInput.y +
-                           transform.right * moveInput.x).normalized;
-        Vector3 move = moveDir * walkSpeed;
-        move.y = verticalVelocity;
-        controller.Move(move * Time.deltaTime);
+            if (moveDir != Vector3.zero)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(moveDir);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, bodyTurnSpeed * Time.deltaTime);
+            }
+
+            velocity = moveDir * walkSpeed;
+        }
+
+        // Gravity SELALU diapply, tidak tergantung joystick
+        velocity.y = verticalVelocity;
+        controller.Move(velocity * Time.deltaTime);
     }
 
-    private void OnJump(InputAction.CallbackContext ctx)
+
+    private void ApplyGravity()
     {
         if (controller.isGrounded)
-            verticalVelocity = jumpForce;
+            verticalVelocity = Mathf.Max(verticalVelocity, -1f);
+        else
+            verticalVelocity -= gravity * Time.deltaTime;
     }
 
     // ──────────────────────────────────────────────
-    //  LOOK + INTERACT — pakai New Input System touch
+    //  CAMERA ORBIT — putar CameraRoot, Cinemachine ikut
     // ──────────────────────────────────────────────
 
-    private void HandleLookAndInteract()
+    private void ApplyCameraOrbit(float deltaX, float deltaY)
+    {
+        if (cameraRoot == null) return;
+
+        yaw += deltaX * lookSensitivity;
+        pitch -= deltaY * lookSensitivity;
+        pitch = Mathf.Clamp(pitch, maxPitchDown, maxPitchUp);
+
+        cameraRoot.rotation = Quaternion.Euler(pitch, yaw, 0f);
+    }
+
+    // ──────────────────────────────────────────────
+    //  TOUCH — kanan layar: camera orbit + tap
+    // ──────────────────────────────────────────────
+
+    private void HandleTouch()
     {
 #if UNITY_EDITOR
-        // Editor: mouse kanan = look, mouse kiri = interact
         var mouse = Mouse.current;
         if (mouse != null)
         {
             if (mouse.rightButton.isPressed)
             {
-                Vector2 mouseDelta = mouse.delta.ReadValue();
-                ApplyLookDelta(mouseDelta.x * 5f, mouseDelta.y * 5f);
+                Debug.Log("[Player] Editor right click");
             }
             if (mouse.leftButton.wasReleasedThisFrame)
-                TryInteract(mouse.position.ReadValue());
+                Debug.Log("[Player] Editor left click — interact via button, bukan tap");
         }
-        return; // Editor tidak pakai touch
+        return;
 #endif
 
         var touchscreen = Touchscreen.current;
@@ -148,14 +203,24 @@ public class PlayerController : MonoBehaviour
 
         foreach (TouchControl touch in touchscreen.touches)
         {
-            TouchPhase phase = (TouchPhase)touch.phase.ReadValue();
+            InputTouchPhase phase = touch.phase.ReadValue();
             int fingerId = touch.touchId.ReadValue();
             Vector2 pos = touch.position.ReadValue();
 
+            bool startsLeft = pos.x <= Screen.width * 0.5f;
+            bool startsRight = !startsLeft;
+
             switch (phase)
             {
-                case TouchPhase.Began:
-                    if (activeFingerId == -1)
+                case InputTouchPhase.Began:
+                    // Claim joystick finger
+                    if (startsLeft && joystickFingerId == -1)
+                    {
+                        joystickFingerId = fingerId;
+                    }
+                    // Claim look finger — pastikan bukan joystick finger
+                    else if (startsRight && activeFingerId == -1
+                             && fingerId != joystickFingerId)
                     {
                         activeFingerId = fingerId;
                         fingerStartPos = pos;
@@ -164,24 +229,30 @@ public class PlayerController : MonoBehaviour
                     }
                     break;
 
-                case TouchPhase.Moved:
+                case InputTouchPhase.Moved:
                     if (fingerId == activeFingerId)
                     {
-                        float dist = Vector2.Distance(pos, fingerStartPos);
-                        if (dist > tapMoveThreshold) fingerMoved = true;
+                        if (Vector2.Distance(pos, fingerStartPos) > tapMoveThreshold)
+                            fingerMoved = true;
 
                         if (fingerMoved)
-                            ApplyLookDelta(pos.x - fingerLastPos.x, pos.y - fingerLastPos.y);
+                            ApplyCameraOrbit(pos.x - fingerLastPos.x,
+                                             pos.y - fingerLastPos.y);
 
                         fingerLastPos = pos;
                     }
                     break;
 
-                case TouchPhase.Ended:
-                case TouchPhase.Canceled:
+                case InputTouchPhase.Ended:
+                case InputTouchPhase.Canceled:
+                    if (fingerId == joystickFingerId)
+                        joystickFingerId = -1;
+
                     if (fingerId == activeFingerId)
                     {
-                        if (!fingerMoved) TryInteract(fingerStartPos);
+                        if (!fingerMoved)
+                            Debug.Log("[Player] Tap kanan — interact via button");
+
                         activeFingerId = -1;
                         fingerMoved = false;
                     }
@@ -191,59 +262,76 @@ public class PlayerController : MonoBehaviour
     }
 
     // ──────────────────────────────────────────────
-    //  INTERACT
+    //  INTERACT — Genshin style
+    //  1. ProximityDetector → ShelfUnit.SetPlayerInRange → event
+    //  2. PlayerController terima event → simpan currentNearbyShelf
+    //  3. Raycast dari HeadPoint ke depan → validasi apakah facing rak
+    //  4. Kalau valid → tampilkan Interact Button
+    //  5. Player tekan button → OnInteractButtonPressed()
     // ──────────────────────────────────────────────
 
-    private void TryInteract(Vector2 screenPos)
+    private void HandleShelfRangeChanged(ShelfUnit shelf, bool inRange)
     {
-        Ray ray = mainCamera.ScreenPointToRay(screenPos);
-
-        if (!Physics.Raycast(ray, out RaycastHit hit, 100f,
-                Physics.AllLayers, QueryTriggerInteraction.Collide))
-            return;
-
-        IInteractable interactable = hit.collider.GetComponentInParent<IInteractable>();
-        if (interactable != null)
+        if (inRange)
         {
-            Debug.Log($"[Player] Interact → {interactable.DisplayName}");
-            interactable.Interact();
+            currentNearbyShelf = shelf;
+        }
+        else if (currentNearbyShelf == shelf)
+        {
+            currentNearbyShelf = null;
+            SetInteractButton(false);
+        }
+    }
+
+    private void ValidateInteract()
+    {
+        if (currentNearbyShelf == null || headPoint == null)
+        {
+            SetInteractButton(false);
             return;
         }
 
-        if (IsGround(hit))
-            Debug.Log("[Player] Tap ke lantai – tidak ada aksi.");
-        else
-            Debug.Log($"[Player] Tap ke objek: {hit.collider.gameObject.name} (tidak interactable)");
+        // Raycast dari kepala player ke depan (arah badan)
+        // QueryTriggerInteraction.Collide supaya kena collider isTrigger ProximityDetector
+        bool hit = Physics.Raycast(
+            headPoint.position,
+            transform.forward,
+            interactRayLength,
+            interactLayer,
+            QueryTriggerInteraction.Collide
+        );
+
+        SetInteractButton(hit);
+
+        // Debug visual di Scene view
+        Debug.DrawRay(
+            headPoint.position,
+            transform.forward * interactRayLength,
+            hit ? Color.green : Color.red
+        );
+    }
+
+    /// <summary>
+    /// Dihubungkan ke OnClick Interact Button di Inspector.
+    /// </summary>
+    public void OnInteractButtonPressed()
+    {
+        if (currentNearbyShelf == null) return;
+        Debug.Log($"[Player] Interact → {currentNearbyShelf.DisplayName}");
+        currentNearbyShelf.Interact();
+    }
+
+    private void SetInteractButton(bool show)
+    {
+        if (interactButtonVisible == show) return;
+        interactButtonVisible = show;
+        interactButton?.SetActive(show);
     }
 
     // ──────────────────────────────────────────────
-    //  HELPERS
+    //  RUNTIME SETTINGS (untuk slider nanti)
     // ──────────────────────────────────────────────
 
-    private bool IsGround(RaycastHit hit)
-    {
-        if (groundLayer != 0)
-            return (groundLayer.value & (1 << hit.collider.gameObject.layer)) != 0;
-        return hit.collider.CompareTag("Ground");
-    }
-
-    private void ApplyLookDelta(float deltaX, float deltaY)
-    {
-        if (cameraTransform == null) return;
-
-        yaw += deltaX * lookSensitivity;
-        pitch -= deltaY * lookSensitivity;
-        pitch = Mathf.Clamp(pitch, maxPitchDown, maxPitchUp);
-
-        cameraTransform.rotation = Quaternion.Euler(pitch, yaw, 0f);
-        transform.rotation = Quaternion.Euler(0f, yaw, 0f);
-    }
-
-    private void ApplyGravity()
-    {
-        if (controller.isGrounded)
-            verticalVelocity = Mathf.Max(verticalVelocity, -1f);
-        else
-            verticalVelocity -= gravity * Time.deltaTime;
-    }
+    public void SetWalkSpeed(float value) => walkSpeed = value;
+    public void SetLookSensitivity(float value) => lookSensitivity = value;
 }

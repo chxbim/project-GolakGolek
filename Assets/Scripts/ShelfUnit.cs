@@ -7,10 +7,12 @@ public enum ShelfType
     Rak_03,
     Kulkas_01,
     Kulkas_02
-}
+}   
 
 public class ShelfUnit : MonoBehaviour, IInteractable
 {
+    public static event System.Action<ShelfUnit, bool> OnPlayerRangeChanged;
+
     // ── Inspector ────────────────────────────────────────────
 
     [Header("Shelf Identity")]
@@ -78,6 +80,7 @@ public class ShelfUnit : MonoBehaviour, IInteractable
     {
         playerInRange = inRange;
         Debug.Log($"[ShelfUnit] {DisplayName} → player in range: {inRange}");
+        OnPlayerRangeChanged?.Invoke(this, inRange); // ← tambah baris ini
     }
 
     // ── Lifecycle ─────────────────────────────────────────────
