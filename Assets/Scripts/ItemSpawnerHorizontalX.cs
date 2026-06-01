@@ -34,10 +34,6 @@ public class ItemSpawnerHorizontalX : MonoBehaviour, IItemSpawner
             Debug.LogWarning($"[ItemSpawnerHorizontalX] {gameObject.name} — ShelfUnit tidak ditemukan di GameObject yang sama.");
             return;
         }
-
-        // Kulkas_02 dan Rak_02 hanya punya 1 level
-        if (shelf.shelfType == ShelfType.Kulkas_02 || shelf.shelfType == ShelfType.Rak_02)
-            levelCount = 1;
     }
 
     // ── Dipanggil ShelfManager ────────────────────────────────
