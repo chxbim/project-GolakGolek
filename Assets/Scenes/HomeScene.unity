@@ -457,7 +457,7 @@ GameObject:
   - component: {fileID: 223739779}
   - component: {fileID: 223739778}
   m_Layer: 5
-  m_Name: BtnMenu
+  m_Name: BtnSetting
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -480,8 +480,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 127.333374, y: -116.17334}
-  m_SizeDelta: {x: 245.3328, y: 245.3328}
+  m_AnchoredPosition: {x: 127.33313, y: -116.17334}
+  m_SizeDelta: {x: 245, y: 245}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &223739778
 MonoBehaviour:
@@ -547,7 +547,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 3f62ba1fe143bcd4fb96e246fe0e5008, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 744ff0ac98374b345833457bad961464, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -592,18 +592,18 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 259606048}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -44.000015}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 726837579}
   m_Father: {fileID: 119840877}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: -25.999895, y: 298.92334}
-  m_SizeDelta: {x: 1446.2612, y: 216.9392}
-  m_Pivot: {x: 0.50000006, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -25.999893, y: -511.07675}
+  m_SizeDelta: {x: 800, y: 300}
+  m_Pivot: {x: 0.50000006, y: 0.5}
 --- !u!114 &259606050
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -817,6 +817,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c14ae78498eb174b9781195be34b84c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneLoader
+  checkSessionOnStart: 0
 --- !u!1 &726837578
 GameObject:
   m_ObjectHideFlags: 0
@@ -980,7 +981,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 770149882}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 81}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -989,7 +990,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 4000, y: 1900}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &770149884
 MonoBehaviour:
@@ -1004,14 +1005,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.07058824, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.9685534, g: 0.95945513, b: 0.9228669, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: fca3c886ea6c58f4fbc0901be08e0e69, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1176,7 +1177,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1625960290}
   m_Layer: 0
-  m_Name: SceneControllerObj
+  m_Name: Managers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1235,8 +1236,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -148.33362, y: -116.17352}
-  m_SizeDelta: {x: 245.3328, y: 245.3328}
+  m_AnchoredPosition: {x: -148.33362, y: -116.17334}
+  m_SizeDelta: {x: 245, y: 245}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1660312065
 MonoBehaviour:
@@ -1281,7 +1282,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1660312066}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 626667192}
+        m_TargetAssemblyTypeName: SceneLoader, Assembly-CSharp
+        m_MethodName: LoadProfileScene
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1660312066
 MonoBehaviour:
   m_ObjectHideFlags: 0
