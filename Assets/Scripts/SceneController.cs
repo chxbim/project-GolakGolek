@@ -71,6 +71,18 @@ public class SceneLoader : MonoBehaviour
         SceneManager.LoadScene("HomeScene");
     }
 
+    public void LoadMainGameAsTimeAttack()
+    {
+        GameSession.SelectedMode = GameMode.TimeAttack;
+        SceneManager.LoadScene("MainGameScene");
+    }
+
+    public void LoadMainGameAsGolek()
+    {
+        GameSession.SelectedMode = GameMode.Golek;
+        SceneManager.LoadScene("MainGameScene");
+    }
+
     // ── Session Utility ──────────────────────────────────────────
 
     /// <summary>
