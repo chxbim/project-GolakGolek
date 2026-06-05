@@ -117,20 +117,3 @@ public class APIManager : MonoBehaviour
     }
 }
 
-[System.Serializable]
-public class CartPayload
-{
-    public string playerId;
-    public List<CartItemPayload> items;
-    public float totalHarga;
-    public string timestamp;
-}
-
-[System.Serializable]
-public class CartItemPayload
-{
-    public string namaItem;
-    public string kategori;
-    public float  harga;
-    public int    quantity;
-}
