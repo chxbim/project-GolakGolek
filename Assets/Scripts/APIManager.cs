@@ -8,6 +8,7 @@ using UnityEngine.Networking;
 public class APIManager : MonoBehaviour
 {
     public static APIManager Instance { get; private set; }
+    private const string GAME_SESSION_URL = "https://lomba.jtv.co.id/api/v1/game-session";
 
     private void Awake()
     {
@@ -62,9 +63,56 @@ public class APIManager : MonoBehaviour
         onSuccess?.Invoke(new List<GameItemData>(parsed.items));
     }
 
-    public void PostCart(CartPayload payload, Action<string> onSuccess = null, Action<string> onError = null)
+    /// <summary>
+    /// POST CartPayload ke endpoint game-session.
+    /// onSuccess dipanggil dengan raw response string kalau HTTP 200.
+    /// onError dipanggil dengan pesan error kalau gagal / non-200.
+    /// </summary>
+    public void PostCart(CartPayload payload,
+                         System.Action<string> onSuccess,
+                         System.Action<string> onError)
     {
-        StartCoroutine(PostCartRoutine(payload, onSuccess, onError));
+        StartCoroutine(PostCartCoroutine(payload, onSuccess, onError));
+    }
+
+    private IEnumerator PostCartCoroutine(CartPayload payload,
+                                          System.Action<string> onSuccess,
+                                          System.Action<string> onError)
+    {
+        string json = JsonUtility.ToJson(payload);
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+
+        Debug.Log($"[APIManager] POST game-session → {GAME_SESSION_URL}");
+        Debug.Log($"[APIManager] Payload JSON: {json}");
+
+        using UnityEngine.Networking.UnityWebRequest req =
+            new UnityEngine.Networking.UnityWebRequest(GAME_SESSION_URL,
+                UnityEngine.Networking.UnityWebRequest.kHttpVerbPOST);
+
+        req.uploadHandler = new UnityEngine.Networking.UploadHandlerRaw(bodyRaw);
+        req.downloadHandler = new UnityEngine.Networking.DownloadHandlerBuffer();
+        req.SetRequestHeader("Content-Type", "application/json");
+        req.SetRequestHeader("Accept", "application/json");
+
+        // Sertakan Bearer token dari session kalau ada
+        string token = SessionCache.AccessToken;
+        if (!string.IsNullOrEmpty(token))
+            req.SetRequestHeader("Authorization", $"Bearer {token}");
+
+        yield return req.SendWebRequest();
+
+        if (req.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
+        {
+            string response = req.downloadHandler.text;
+            Debug.Log($"[APIManager] POST berhasil ({req.responseCode}). Response: {response}");
+            onSuccess?.Invoke(response);
+        }
+        else
+        {
+            string error = $"HTTP {req.responseCode} — {req.error}. Body: {req.downloadHandler?.text}";
+            Debug.LogError($"[APIManager] POST gagal: {error}");
+            onError?.Invoke(error);
+        }
     }
 
     private IEnumerator PostCartRoutine(CartPayload payload, Action<string> onSuccess, Action<string> onError)
@@ -94,7 +142,7 @@ public class APIManager : MonoBehaviour
     {
         return json
             .Replace("\"nama_item\"",           "\"namaItem\"")
-            .Replace("\"display_name\"",         "\"displayName\"")
+            .Replace("\"display_name\"",         "\"displayname\"")
             .Replace("\"kategori_barang\"",      "\"kategoriBarang\"")
             .Replace("\"harga\"",                "\"hargaRaw\"")
             .Replace("\"object_file_name\"",     "\"objectFileName\"")

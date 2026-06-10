@@ -7,7 +7,7 @@ public enum ShelfType
     Rak_03,
     Kulkas_01,
     Kulkas_02
-}   
+}
 
 public class ShelfUnit : MonoBehaviour, IInteractable
 {
@@ -17,9 +17,10 @@ public class ShelfUnit : MonoBehaviour, IInteractable
 
     [Header("Shelf Identity")]
     [SerializeField] private int shelfId = 0;
-    // PENTING: shelfId harus sama dengan urutan_rak di API
-    // urutan_rak 0 = Saus Berisik, 1 = Saus Huha, dst
     [SerializeField] public ShelfType shelfType = ShelfType.Rak_01;
+
+    [Header("Btn ItemDiambil")]
+    public ItemInteractUI itemInteractUI;
 
     [Header("Fallback — dipakai hanya jika API tidak bisa dijangkau")]
     [SerializeField] private string fallbackNamaItem = "Item Test";
@@ -29,7 +30,9 @@ public class ShelfUnit : MonoBehaviour, IInteractable
     // ── Runtime ──────────────────────────────────────────────
 
     public GameItemData ItemData { get; private set; }
-    public int ShelfId => shelfId;          // dibaca ShelfManager
+    private GameItemData currentItemData;
+
+    public int ShelfId => shelfId;
     public string DisplayName => $"Rak {shelfId} ({shelfType})";
 
     private bool playerInRange = false;
@@ -56,14 +59,32 @@ public class ShelfUnit : MonoBehaviour, IInteractable
             $"  Shelf ID    : {shelfId}\n" +
             $"  Tipe Rak    : {shelfType}\n" +
             $"  Nama Barang : {ItemData.namaItem}\n" +
+            $"  Nama Barang : {ItemData.displayname}\n" +
             $"  Kategori    : {ItemData.kategoriBarang}\n" +
             $"  Varian      : {ItemData.varian}\n" +
-            $"  FBX         : {ItemData.objectFileName}\n" +
             $"  Harga       : Rp {ItemData.Harga:N0}\n" +
             "──────────────────────────────────────"
         );
 
-        CartSystem.Instance?.AddItem(ItemData);
+        // Cek dulu ke ListingBarang — kalau match, dia yang centang + trigger cart
+        var listing = FindFirstObjectByType<ListingBarang>();
+        if (listing == null)
+        {
+            Debug.LogError("[ShelfUnit] ListingBarang tidak ditemukan!");
+            return;
+        }
+
+        bool cocok = listing.CekDanCentangItem(ItemData.id);
+
+        if (cocok)
+        {
+            CartSystem.Instance?.AddItem(ItemData);
+            Debug.Log($"[ShelfUnit] ✅ {ItemData.namaItem} cocok dengan list — masuk cart.");
+        }
+        else
+        {
+            Debug.Log($"[ShelfUnit] ❌ {ItemData.namaItem} tidak ada di list objective atau sudah diambil.");
+        }
     }
 
     // ── Dipanggil ShelfManager setelah API fetch ─────────────
@@ -71,6 +92,7 @@ public class ShelfUnit : MonoBehaviour, IInteractable
     public void SetItemData(GameItemData data)
     {
         ItemData = data;
+        currentItemData = data;   // ← fix: sync dua-duanya
         Debug.Log($"[ShelfUnit] {DisplayName} → data dari API: {data}");
     }
 
@@ -80,19 +102,24 @@ public class ShelfUnit : MonoBehaviour, IInteractable
     {
         playerInRange = inRange;
         Debug.Log($"[ShelfUnit] {DisplayName} → player in range: {inRange}");
-        OnPlayerRangeChanged?.Invoke(this, inRange); // ← tambah baris ini
+
+        OnPlayerRangeChanged?.Invoke(this, inRange);
+
+        if (itemInteractUI == null) return;   // ← guard di ATAS, satu kali
+
+        if (inRange && currentItemData != null)
+            itemInteractUI.ShowForShelf(this, currentItemData);
+        else
+            itemInteractUI.Hide();
     }
 
     // ── Lifecycle ─────────────────────────────────────────────
 
     private void Start()
     {
-        // Fallback hanya jalan kalau API gagal dan SetItemData gagal dipanggil.
-        // Karena API fetch async, Start() jalan duluan — fallback ini akan
-        // di-override oleh SetItemData() begitu ShelfManager selesai fetch.
         if (ItemData == null)
         {
-            ItemData = new GameItemData
+            var fallback = new GameItemData
             {
                 namaItem = fallbackNamaItem,
                 hargaRaw = fallbackHarga.ToString(),
@@ -100,6 +127,8 @@ public class ShelfUnit : MonoBehaviour, IInteractable
                 varian = "-",
                 objectFileName = "Unknown"
             };
+            ItemData = fallback;
+            currentItemData = fallback;   // ← fix: currentItemData juga dapat fallback
             Debug.Log($"[ShelfUnit] {DisplayName} → fallback sementara (menunggu API)...");
         }
     }

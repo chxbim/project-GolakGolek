@@ -65,40 +65,6 @@ public class CartSystem : MonoBehaviour
         OnCartChanged?.Invoke();
     }
 
-    /// <summary>Kurangi quantity item by id. Jika qty 0, hapus dari cart.</summary>
-    public void RemoveItem(GameItemData item)
-    {
-        if (item == null) return;
-
-        CartEntry existing = entries.Find(e => e.Item.id == item.id);
-        if (existing == null)
-        {
-            Debug.LogWarning($"[Cart] Item tidak ada di cart: {item.namaItem} (id: {item.id})");
-            return;
-        }
-
-        existing.Quantity--;
-        if (existing.Quantity <= 0)
-        {
-            entries.Remove(existing);
-            Debug.Log($"[Cart] Dihapus dari cart: {item.namaItem}");
-        }
-        else
-        {
-            Debug.Log($"[Cart] -1 {item.namaItem} → qty {existing.Quantity}");
-        }
-
-        OnCartChanged?.Invoke();
-    }
-
-    /// <summary>Hapus semua item dari cart.</summary>
-    public void ClearCart()
-    {
-        entries.Clear();
-        Debug.Log("[Cart] Cart dikosongkan.");
-        OnCartChanged?.Invoke();
-    }
-
     /// <summary>Total harga semua item di cart.</summary>
     public float GetTotal()
     {

@@ -67,6 +67,12 @@ public class ShelfManager : MonoBehaviour
         }
 
         Debug.Log($"[ShelfManager] {matched}/{allShelves.Length} ShelfUnit berhasil dapat data API.");
+
+        var listingBarang = FindFirstObjectByType<ListingBarang>();
+        if (listingBarang != null)
+            listingBarang.InitDariDatabase(items);
+        else
+            Debug.LogError("[ShelfManager] ListingBarang tidak ditemukan di scene!");
     }
 
     private void OnFetchError(string error)
