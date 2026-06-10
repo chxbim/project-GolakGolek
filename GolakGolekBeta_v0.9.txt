@@ -1,0 +1,1307 @@
+﻿================================================================
+  GOLAKGOLEK — MASTER REFERENCE DOCUMENT
+  Beta v0.9 Build, Juni 2026
+  Update terakhir: 11 Juni 2026 -- CashierController + CashierTriggerZone ada tapi belom selesai
+================================================================
+
+
+================================================================
+  KONTEKS PROYEK
+================================================================
+
+
+Nama Game                     : GolakGolek
+Platform                      : Android
+Engine                        : Unity 3D LTS 6000.3.10f (URP), Input System: New
+Bahasa                        : C#
+Institusi                     : PT Jawa Pos Media Televisi (JTV) — Magang
+Periode                       : 19 Januari – 3 Juni 2026
+Integrasi                     : Aplikasi JTVHub (login, API endpoint)
+Endpoint API                  : https://plus.jtv.co.id/Apigame/game_object
+Endpoint Login                : https://sso.jtv.co.id/api/login
+Endpoint Player Gameplay      : https://lomba.jtv.co.id/api/v1/game-session
+Backend                       : PHP — menerima POST via json_decode(file_get_contents('php://input'))
+
+
+Konteks pengembangan:
+  Unity, C#, dan game development belum pernah disentuh
+  sebelum magang dimulai. Game dikembangkan dari nol.
+
+
+================================================================
+  KONSEP GAME
+================================================================
+
+GolakGolek adalah game simulasi Supermarket Hunting 3D.
+Player bergerak di dalam minimarket 3D, mencari dan mengambil
+item, lalu submit keranjang (objektif game) di kasir.
+
+
+----------------------------------------------------------------
+  MODE PERMAINAN
+----------------------------------------------------------------
+
+
+TIME ATTACK (TA)
+  - Player diberi 8 item target yang ditampilkan dengan list nama barang dari TMPro,
+    tergantung mode game
+  - Gameplay mencari 1 barang spesifik dalam batasan waktu untuk mode Time Attack (TA)
+  - Tujuan: temukan semua item sebelum waktu habis
+  - Scoring berbasis kecepatan (waktuSelesai dalam detik)
+
+
+GOLEK
+  - Tidak ada batasan waktu
+  - Item ditampilkan dengan NAMA RIDDLE (field: displayname)
+    bukan nama asli (field: namaItem)
+  - Player harus menebak item dari deskripsi riddle
+  - Lebih santai, fokus ke puzzle/tebak-tebakan
+
+
+KASIR (bukan mode — fitur submit)
+  - Saat player masuk zona kasir, muncul UI konfirmasi
+  - Player confirm → CartSystem POST ke API
+  - Tidak ada kalkulasi harga untuk player
+  - Kasir murni untuk submit sesi game
+
+
+
+
+================================================================
+  ARSITEKTUR SCENE
+================================================================
+
+
+Scene yang sudah ada di Build Settings:
+  HomeScene       ← splash + judul game, entry point app
+  LoginScene      ← form login JTV SSO
+  SelectMode      ← pilih mode game (TimeAttack / Golek)
+  MainGameScene   ← gameplay utama (GolakGolekEnv)
+  ProfileScene    ← profil user
+
+
+----------------------------------------------------------------
+  HIERARCHY SELECTMODE
+----------------------------------------------------------------
+
+
+SelectMode
+├── Main Camera
+├── Directional Light
+├── Canvas
+│   └── Content
+│       ├── Background
+│       ├── Judul
+│       ├── BtnHome
+│       ├── PanelMode             ← default: active
+│       │   ├── ModeGolek         ← OnClick → UIController.ShowTutorialGolek()
+│       │   └── ModeTimeAttack    ← OnClick → UIController.ShowTutorialTimeAttack()
+│       └── PanelTutorial         ← default: inactive
+│           ├── ModeGolek         ← default: inactive (child)
+│           └── ModeTimeAttack    ← default: inactive (child)
+├── EventSystem
+└── Managers
+    ├── SceneController
+    └── UIController              ← attach UIController.cs di sini
+
+
+Flow SelectMode:
+  Player tap ModeGolek/ModeTimeAttack di PanelMode
+    → UIController.ShowTutorialGolek() / ShowTutorialTimeAttack()
+    → PanelTutorial.SetActive(true)
+    → child mode yg sesuai.SetActive(true)
+    → BtnMulai di dalam child → SceneController.LoadMainGameAsGolek()
+                                 / .LoadMainGameAsTimeAttack()
+    → GameSession.SelectedMode di-set → LoadScene("MainGameScene")
+
+
+----------------------------------------------------------------
+  HIERARCHY MAINGAMESCENE — PLAYERCANVAS
+----------------------------------------------------------------
+
+
+PlayerCanvas
+├── Joystick
+├── CartButton
+├── BtnPause          ← always on (kedua mode) — OnClick → UIController.TogglePause()
+├── Listing           ← always on (kedua mode) — daftar objective item
+└── TimeAttackTimer   ← TimeAttack only — diaktifkan UIController.ApplyModeUI()
+    └── [TMPro Text]  ← realtime countdown MM:SS via UIController.UpdateTimerDisplay()
+
+
+Alur scene utama:
+
+
+  App buka → HomeScene
+                 ↓
+      SceneLoader.CheckSessionAndRoute()
+                 ├── Session valid → SelectMode (skip login)
+                 └── Session invalid → user di HomeScene
+                                           ↓
+                                    tap BtnMulai → LoginScene
+                                           ↓
+                                    AuthManager.Login()
+                                    POST ke sso.jtv.co.id/api/login
+                                           ↓
+                                    Berhasil → SessionCache.SaveSession()
+                                            → SelectMode
+                                    Gagal   → warningImage.SetActive(true)
+
+
+----------------------------------------------------------------
+  HIERARCHY MAINGAMESCENE
+----------------------------------------------------------------
+
+
+Scene Utama (MainGameScene): GolakGolekEnv
+
+
+GolakGolekEnv
+├── Structural
+│   ├── Roofcase
+│   │   └── isi Prefab untuk atap supermarket
+│   ├── Building
+│   │   └── isi Prefab seluruh tembok di supermarket
+│   ├── Pillar
+│   │   └── isi Prefab pillar penyangga, sekaligus pembagian section
+│   ├── Signboard + TV
+│       └── isi Prefab untuk materi promosi banner JTV
+│
+├── Furniture
+│   ├── Minuman
+│   │   └── P_Envi_Furniture_Kulkas_01_1-9 dan P_Envi_Furniture_Rak_02_10
+│   ├── Makanan
+│   │   └── P_Envi_Furniture_Rak_01_1-belom tahu, belom di deploy semua
+│   ├── MakananFrozen
+│   │   └── P_Envi_Furniture_Kulkas_02_1-belom tahu, belom di deploy semua
+│   ├── Obat
+│   │   └── P_Envi_Furniture_Rak_01_1-belom tahu, belom di deploy semua
+│   ├── Cashier
+│   │   └── Blocker berupa P_Envi_Furniture_Kasir
+│   │   └── isTrigger untuk script system submit ke kasir setelah game objective selesai
+
+
+----------------------------------------------------------------
+  STRUKTUR HIERARCHY PER RAK
+----------------------------------------------------------------
+
+
+[Parent Rak]               ← ShelfUnit.cs + ItemSpawner.cs
+├── BlockerCube            ← Prefab solid (isTrigger=false)
+│                            mencegah player tembus rak
+└── isTrigger [nama rak]   ← Trigger zone (isTrigger=true)
+                              ProximityDetector.cs
+                              mendeteksi kedekatan player
+
+
+ShelfUnit dipasang di parent supaya GetComponentInParent<>()
+dari collider manapun (BlockerCube atau trigger) tetap bisa
+menemukan script utama.
+
+
+================================================================
+  ALUR DATA — END TO END
+================================================================
+
+
+  [API GET]
+      ↓
+  APIManager.FetchItems()
+      ↓ raw JSON snake_case
+  RemapJsonKeys()           ← ganti key snake_case → camelCase/Raw
+      ↓ remapped JSON
+  wrap "{\"items\":...}"    ← karena JsonUtility tidak bisa
+      ↓                        parse root-level array langsung
+  JsonUtility.FromJson<GameItemDataList>()
+      ↓ List<GameItemData>
+  ShelfManager.OnItemsFetched()
+      ↓ Dictionary<int, GameItemData> keyed by urutanRak
+  FindObjectsOfType<ShelfUnit>()
+      ↓ matching: shelf.ShelfId == item.urutanRak
+  ShelfUnit.SetItemData(data)
+  ItemSpawner.SetItemDataAndSpawn(data)
+      ↓ spawn prefab 3D di world position dari API
+  ListingBarang.InitDariDatabase(allItems)
+      ↓ Fisher-Yates shuffle → ambil jumlahItemPerSesi item
+  ShoppingListUI.TampilkanList(itemAktif, GameSession.SelectedMode)
+      ↓ render label per mode (namaItem+varian | displayName)
+  [Player interact → proximity + raycast → Interact Button muncul]
+      ↓
+  PlayerController.OnInteractButtonPressed()
+      ↓
+  ShelfUnit.Interact()
+      ↓
+  ListingBarang.CekDanCentangItem(item.id)   ← MATCHING ada di sini
+      ↓ true: item match objective
+  ShoppingListUI.SetCentang(itemId, true)    ← centang di listing UI
+  CartSystem.AddItem(GameItemData)           ← hanya dipanggil kalau match
+      ↓ fire OnCartChanged event
+  Inventory.cs RefreshFromCart()             ← pure UI layer, subscribe event
+      ↓
+  [Player masuk zona kasir]
+      ↓
+  CartSystem.BuildPayload(GameCashierData session, int totalObjective)
+      ↓ CartPayload
+  APIManager.PostCart(payload)
+      ↓ POST application/json ke endpoint JTV
+
+
+
+
+================================================================
+  DATABASE & BACKEND
+================================================================
+
+
+Endpoint game item (posisi_barang): https://plus.jtv.co.id/Apigame/game_object
+  - GET  : ambil semua item (produk + posisi koordinat)
+  - Response: data diambil dan di-RemapJsonkeys untuk implement ke local variable
+
+
+Endpoint login: https://sso.jtv.co.id/api/login
+  - POST : x-www-form-urlencoded
+  - Response: JSON (user object + token)
+
+
+Endpoint keranjang/gameplay Player: https://lomba.jtv.co.id/api/v1/game-session
+  - POST : raw JSON 
+  - Response: variable data 1-on-1 sebanding dengan local dan konfirmasi masuk backend.
+
+
+Konvensi: database menggunakan snake_case untuk semua field.
+
+
+----------------------------------------------------------------
+  STRUKTUR FIELD DATABASE PER ITEM
+----------------------------------------------------------------
+
+
+DATA USER (INFORMASI PRODUK):
+  id                int      Primary key, tidak dipakai game
+  nama_item         string   Nama produk asli
+  display_name      string   Nama riddle untuk mode Golek
+  kategori_barang   string   makanan / minuman / lainnya
+  varian            string   Varian produk
+  harga             decimal  Harga dalam Rupiah
+
+
+DATA OBJECT (INFORMASI ASET 3D):
+  object_file_name     string  Nama prefab Unity
+                                (ex: P_UHTFullCream.prefab)
+  object_kategori      string  Kategori object 3D
+  object_sub_kategori  string  Sub kategori (botol, kaleng, dll)
+
+
+POSISI KOORDINAT & PENATAAN RAK:
+  posisi_x          string(decimal)  World position X item pertama
+  posisi_y          string(decimal)  World position Y item pertama
+  posisi_z          string(decimal)  World position Z item pertama
+  jarak_vertikal    string(decimal)  Jarak antar level rak (Y offset)
+  jarak_horizontal  string(decimal)  Jarak antar item sejajar (X offset)
+  total_per_rak     string(int)      Total item per rak
+  urutan_rak        string(int)      KUNCI MATCHING — index rak,
+                                     di-match dengan shelfId di Inspector
+                                     Range: 0–79 (80 item, 1 item 1 rak)
+  jumlah_baris      string(int)      Jumlah baris item per level
+
+
+CATATAN: field numerik disimpan sebagai string di database.
+JsonUtility tidak bisa auto-convert JSON string → float/int,
+sehingga semua field numerik disimpan sebagai string di
+GameItemData dan di-parse manual dengan CultureInfo.InvariantCulture.
+
+
+----------------------------------------------------------------
+  STRUKTUR RESPONSE API LOGIN (sso.jtv.co.id/api/login)
+----------------------------------------------------------------
+
+
+Request body (x-www-form-urlencoded):
+  email         string   email user JTVHub
+  password      string   password user JTVHub
+  device_uuid   string   "67" — hardcoded (bypass device permission)
+  device_name   string   "yes" — hardcoded static
+  platform      string   "Android" — hardcoded
+  app_id        string   "game_GolakGolek" — hardcoded
+
+
+Response JSON (200 OK):
+  {
+    "user": {
+      "id":    int      ← disimpan ke session_user_id
+      "name":  string  ← disimpan ke session_user_name
+      "email": string
+      ... (field lain tidak dipakai game)
+    },
+    "access_token":  string  ← Bearer token
+    "refresh_token": string  ← disimpan, untuk kegunaan lain
+    "token_type":    string  "Bearer"
+    "expires_in":    int     31536000 (1 tahun dalam detik)
+  }
+
+
+---------------------------------------------------------------------------
+  ITEM YANG SUDAH ADA DI DATABASE JSON LOCAL (Assets/Resources/JSON file)
+---------------------------------------------------------------------------
+
+
+  ID  | Nama Item          | Display Name (Riddle)     | Urutan Rak
+  ----|--------------------|-----------------------------|----------
+  2   | Saus Berisik       | Saus Teriyaki              | 0
+  3   | Saus Huha          | Saus Sambal                | 1
+  4   | Saus Sapi          | Saus BBQ                   | 2
+  5   | Saus Kerang        | Saus Tiram                 | 3
+  6   | SKM                | Susu Kental Manis          | 4
+  7   | Susu Full Cream    | Full Cream 1L              | 5
+  8   | Full Cream Pink    | Susu Full Cream Stroberi   | 6
+.....dst.
+
+
+  Total item sebenarnya (di backend): 80 item, 1 item per rak, urutan_rak 0–79.
+
+
+
+
+================================================================
+  SISTEM SCRIPT — LENGKAP
+================================================================
+
+
+Konvensi: semua script Unity menggunakan camelCase untuk
+field dan variabel, PascalCase untuk class dan method, dan snake_case untuk string variabel dari backend.
+
+
+----------------------------------------------------------------
+  SessionCache.cs  [SELESAI & SIAP PAKAI — static class]
+----------------------------------------------------------------
+Static class — tidak perlu attach ke GameObject.
+Persistent login session via Unity PlayerPrefs.
+
+
+Storage keys (private const string):
+  "session_user_id"       ← user.id dari response login (int → string)
+  "session_user_name"     ← user.name dari response login
+  "session_access_token"  ← Bearer token untuk request API
+  "session_refresh_token" ← disimpan, untuk kegunaan lain nanti
+  "session_expiry"        ← Unix timestamp (UtcNow + expires_in detik)
+
+
+Public properties (read-only):
+  static string UserId        → PlayerPrefs.GetString("session_user_id")
+  static string UserName      → PlayerPrefs.GetString("session_user_name")
+  static string AccessToken   → PlayerPrefs.GetString("session_access_token")
+  static string RefreshToken  → PlayerPrefs.GetString("session_refresh_token")
+
+
+Methods:
+  SaveSession(userId, userName, accessToken, refreshToken, expiresInSeconds)
+    → hitung expiry: DateTimeToUnix(UtcNow) + expiresInSeconds
+    → simpan semua ke PlayerPrefs
+    → PlayerPrefs.Save() untuk flush ke disk Android
+
+
+  IsSessionValid()
+    → cek HasKey("session_access_token") + HasKey("session_expiry")
+    → parse expiry, bandingkan vs UtcNow
+    → kalau expired: auto ClearSession(), return false
+    → return true kalau valid
+
+
+  ClearSession()
+    → DeleteKey semua keys, PlayerPrefs.Save()
+    → dipanggil saat logout atau session expired
+
+
+  DateTimeToUnix(DateTime) [private]
+    → (long)(dt - epoch).TotalSeconds
+
+
+Catatan: expires_in dari server = 31536000 detik (1 tahun).
+Expiry dihitung client-side dari UtcNow saat SaveSession dipanggil.
+PlayerPrefs Android = plain text XML di app storage.
+Jangan simpan password — hanya token server-generated.
+
+
+----------------------------------------------------------------
+  AuthManager.cs  [SELESAI & SIAP PAKAI — MonoBehaviour]
+----------------------------------------------------------------
+Attach ke GameObject AuthManager di LoginScene.
+Handle form login, POST ke JTVHub, save session, redirect scene.
+
+
+Inspector fields:
+  [Header("Input Fields")]
+    TMP_InputField emailLoginField      ← drag EmailField
+    TMP_InputField passwordLoginField   ← drag PasswordField
+
+
+  [Header("Feedback (Image GameObjects)")]
+    GameObject warningImage   ← Image asset error (default inactive)
+    GameObject confirmImage   ← Image asset loading/berhasil (default inactive)
+
+
+  [Header("UI")]
+    UnityEngine.UI.Button loginButton   ← drag BtnLogin
+
+
+  [Header("Scene Target")]
+    string sceneAfterLogin = "SelectMode"
+
+
+Endpoint: https://hub.jtv.co.id/api/login
+
+
+Response model (private, Serializable):
+  LoginUser  { int id; string name; string email; }
+  LoginResponse {
+    LoginUser user;
+    string access_token; string refresh_token;
+    string token_type;   long expires_in;
+  }
+
+
+Flow Login():
+  1. Trim email, ambil password dari TMP_InputField
+  2. Validasi kosong → SetWarning(true) jika kosong
+  3. SetWarning(false) → StartCoroutine(PostLogin())
+
+
+Flow PostLogin() [Coroutine]:
+  1. SetLoadingState(true) → disable button, tampil confirmImage
+  2. Buat WWWForm dengan fields:
+       email, password,
+       device_uuid="67", device_name="yes",
+       platform="Android", app_id="game_GolakGolek"
+  3. UnityWebRequest.Post(LOGIN_URL, form)
+     + header Accept: application/json
+  4. Tunggu response
+  5. SetLoadingState(false)
+  6. Kalau gagal → SetWarning(true), Debug.LogWarning, yield break
+  7. JsonUtility.FromJson<LoginResponse>(json)
+  8. Kalau access_token null/empty → SetWarning(true), yield break
+  9. SessionCache.SaveSession(user.id, user.name, access_token,
+                              refresh_token, expires_in)
+  10. SetConfirm(true) → WaitForSeconds(0.8f)
+  11. SceneManager.LoadScene(sceneAfterLogin)
+
+
+Helpers:
+  SetLoadingState(bool loading)
+    → loginButton.interactable = !loading
+    → SetConfirm(loading)
+  SetWarning(bool show) → warningImage.SetActive(show)
+  SetConfirm(bool show) → confirmImage.SetActive(show)
+
+
+Catatan:
+  - WWWForm otomatis set Content-Type: x-www-form-urlencoded
+  - Start() menyembunyikan kedua image di awal (SetActive false)
+  - device_uuid="67" dan device_name="yes" sengaja hardcode
+    untuk bypass Android device permission (SystemInfo tidak dipakai)
+
+
+----------------------------------------------------------------
+  SceneController.cs  [SELESAI & SIAP PAKAI — MonoBehaviour]
+----------------------------------------------------------------
+Attach ke SceneControllerObject di setiap scene.
+Menggantikan peran GameManager untuk navigasi + cek session.
+GameManager tidak dibuat terpisah — fungsinya cukup di sini.
+
+
+Methods navigasi:
+  LoadMainGame()    → SceneManager.LoadScene("MainGameScene")
+  LoadSelectMode()  → SceneManager.LoadScene("SelectMode")
+  LoadLoginScene()  → SceneManager.LoadScene("LoginScene")
+  LoadProfileScene()→ SceneManager.LoadScene("ProfileScene")
+  LoadHomeScene()   → SceneManager.LoadScene("HomeScene")
+
+
+Session methods:
+  CheckSessionAndRoute()
+    → SessionCache.IsSessionValid()
+    → true  : Debug.Log + LoadScene("SelectMode")
+    → false : tidak redirect, user tetap di HomeScene
+              (BtnMulai → LoadLoginScene())
+
+
+  Logout()
+    → SessionCache.ClearSession()
+    → LoadScene("HomeScene")
+
+
+  LoadMainGameAsTimeAttack()   [BARU]
+    → GameSession.SelectedMode = GameMode.TimeAttack
+    → SceneManager.LoadScene("MainGameScene")
+
+
+  LoadMainGameAsGolek()        [BARU]
+    → GameSession.SelectedMode = GameMode.Golek
+    → SceneManager.LoadScene("MainGameScene")
+
+
+Pemakaian di HomeScene:
+  - Panggil CheckSessionAndRoute() di Start() atau via UnityEvent
+  - BtnMulai OnClick → SceneLoader.LoadLoginScene()
+    (hanya dicapai kalau session invalid, karena valid langsung redirect)
+
+
+----------------------------------------------------------------
+  GameItemData.cs  [CONFIRMED dari lokal — FINAL]
+----------------------------------------------------------------
+Data class satu item dari API.
+
+
+  // String fields langsung dari API
+  string id
+  string namaItem             ← nama_item
+  string displayname          ← display_name  (riddle mode Golek)
+  string kategoriBarang       ← kategori_barang
+  string varian
+  string hargaRaw             ← harga
+  string objectFileName       ← object_file_name
+  string objectKategori       ← object_kategori
+  string objectSubKategori    ← object_sub_kategori
+
+
+  // Numeric fields — disimpan string, di-parse via property
+  string posisiXRaw           ← posisi_x
+  string posisiYRaw           ← posisi_y
+  string posisiZRaw           ← posisi_z
+  string jarakVertikalRaw     ← jarak_vertikal
+  string jarakHorizontalRaw   ← jarak_horizontal
+  string totalPerRakRaw       ← total_per_rak
+  string urutanRakRaw         ← urutan_rak  ← KUNCI MATCHING
+  string jumlahBarisRaw       ← jumlah_baris
+
+
+  // Non-serialized (tidak dari API)
+  [System.NonSerialized] Sprite icon   ← diisi IconRegistry.cs
+
+
+  // Computed properties (semua pakai InvariantCulture)
+  float Harga             → Parse(hargaRaw)
+  float posisiX/Y/Z       → Parse(posisiXRaw/YRaw/ZRaw)
+  float jarakVertikal     → Parse(jarakVertikalRaw)
+  float jarakHorizontal   → Parse(jarakHorizontalRaw)
+  int   totalPerRak       → (int)Parse(totalPerRakRaw)
+  int   urutanRak         → (int)Parse(urutanRakRaw)
+  int   jumlahBaris       → (int)Parse(jumlahBarisRaw)
+
+
+  private static float Parse(string s)
+    → float.TryParse(s, NumberStyles.Float,
+                     CultureInfo.InvariantCulture, out result)
+    → return 0f kalau null/empty/gagal parse
+    → Debug.LogWarning kalau gagal parse
+
+
+  Wrapper class:
+  internal class GameItemDataList { public GameItemData[] items; }
+    → dibutuhkan karena JsonUtility tidak bisa parse array langsung
+
+
+  ToString():
+    "{namaItem} [{kategoriBarang}] {varian} – Rp {Harga:N0}
+     (rak ke-{urutanRak})"
+
+
+----------------------------------------------------------------
+  GameCashierData.cs  [TEMPLATE SELESAI, belum dibuat di project]
+----------------------------------------------------------------
+Menampung data sesi game untuk keperluan submit kasir.
+Diisi oleh SceneController/GameManager selama game berlangsung.
+
+
+  string  playerId        → dari SessionCache.UserId
+  string  mode            → "TimeAttack" | "Golek"
+  float   waktuSelesai    → detik elapsed; 0 kalau mode Golek
+  int     itemDitemukan   → dari CartSystem.GetEntries().Count
+                            saat submit
+  string  timestamp       → ISO 8601, diisi saat BuildPayload()
+                            dipanggil
+
+
+----------------------------------------------------------------
+  APIManager.cs  [Singleton, DontDestroyOnLoad]
+----------------------------------------------------------------
+Satu-satunya script yang komunikasi ke server JTV (game endpoint).
+Login ditangani AuthManager — bukan APIManager.
+
+
+GET — FetchItems():
+  UnityWebRequest.Get(baseUrl)
+  → raw JSON snake_case
+  → RemapJsonKeys()
+  → wrap "{\"items\":...}"
+  → JsonUtility.FromJson<GameItemDataList>()
+  → callback onSuccess(List<GameItemData>)
+
+
+RemapJsonKeys() — mapping LENGKAP (snake_case → camelCase/Raw):
+  "nama_item"           → "namaItem"
+  "display_name"        → "displayname"
+  "kategori_barang"     → "kategoriBarang"
+  "harga"               → "hargaRaw"
+  "object_file_name"    → "objectFileName"
+  "object_kategori"     → "objectKategori"
+  "object_sub_kategori" → "objectSubKategori"
+  "posisi_x"            → "posisiXRaw"
+  "posisi_y"            → "posisiYRaw"
+  "posisi_z"            → "posisiZRaw"
+  "jarak_vertikal"      → "jarakVertikalRaw"
+  "jarak_horizontal"    → "jarakHorizontalRaw"
+  "total_per_rak"       → "totalPerRakRaw"
+  "urutan_rak"          → "urutanRakRaw"
+  "jumlah_baris"        → "jumlahBarisRaw"
+
+
+POST — PostCart():
+  JsonUtility.ToJson(CartPayload) → raw bytes
+  → UnityWebRequest POST
+  → Content-Type: application/json
+  → Backend terima via json_decode(file_get_contents('php://input'))
+  STATUS: belum bisa ditest — backend POST sudah diimplementasi,
+          logic game mode belum selesai dicode di local
+
+
+CartPayload (struktur POST — FINAL v0.6):
+  string              player_id
+  string              mode
+  float               waktu_selesai
+  int                 item_ditemukan
+  float               total_harga
+  int                 koin           ← 25 kalau semua objective selesai, 0 kalau tidak
+  string              timestamp      ← "yyyy-MM-dd HH:mm:ss"
+  List<CartItemPayload> items
+
+
+CartItemPayload (per item — FINAL v0.6):
+  string  nama_item
+  string  kategori
+  string  varian
+  int     urutan_rak
+  string  harga      ← tetap string (raw dari API, bukan float)
+  string  quantity   ← tetap string
+
+
+----------------------------------------------------------------
+  ShelfManager.cs  [Singleton]
+----------------------------------------------------------------
+Fetch API → distribute data ke ShelfUnit + ItemSpawner.
+
+
+Flow:
+  Start()
+  → APIManager.Instance.FetchItems()
+  → OnItemsFetched(List<GameItemData>)
+     → build Dictionary<int, GameItemData> keyed by urutanRak
+     → FindObjectsOfType<ShelfUnit>()   ← auto-discover semua rak
+     → foreach shelf:
+         lookup[shelf.ShelfId] → shelf.SetItemData(data)
+                               → shelf.GetComponent<ItemSpawner>()
+                                        ?.SetItemDataAndSpawn(data)
+
+
+----------------------------------------------------------------
+  ShelfUnit.cs  [MonoBehaviour pada parent rak]
+----------------------------------------------------------------
+Script utama rak. Implements IInteractable.
+
+
+ShelfType enum (FINAL — naming dari scene lokal):
+  Rak_01       ← rak dengan 3 level baris
+  Rak_02       ← rak 1 level baris, barang panjang/besar
+  Rak_03       ← rak 3 level baris, debug side
+  Kulkas_01    ← kulkas showcase 3 level baris
+  Kulkas_02    ← kulkas horizontal frozen food, 1 level baris
+
+
+Inspector fields:
+  int       shelfId         ← KUNCI MATCHING dengan urutan_rak API
+  ShelfType shelfType       ← untuk label/debug
+  string    fallbackNamaItem
+  float     fallbackHarga
+  string    fallbackKategori
+
+
+Public API:
+  void   SetItemData(GameItemData data)  ← dipanggil ShelfManager
+  void   SetPlayerInRange(bool inRange)  ← dipanggil ProximityDetector
+  int    ShelfId { get; }               ← dibaca ShelfManager
+  string displayname { get; }           ← implements IInteractable
+
+
+Interact():
+  → CartSystem.AddItem(currentItemData)
+
+
+Fallback data aktif sementara sebelum API fetch selesai,
+lalu di-override SetItemData() begitu ShelfManager selesai.
+
+
+----------------------------------------------------------------
+  ProximityDetector.cs  [MonoBehaviour pada child isTrigger]
+----------------------------------------------------------------
+Script ringan, satu tugas: deteksi player masuk/keluar trigger.
+
+
+  Awake()     → GetComponentInParent<ShelfUnit>() → ref parentShelf
+  OnTriggerEnter → parentShelf.SetPlayerInRange(true)
+  OnTriggerExit  → parentShelf.SetPlayerInRange(false)
+
+
+----------------------------------------------------------------
+  ItemSpawner.cs  [MonoBehaviour pada parent rak, bersama ShelfUnit]
+----------------------------------------------------------------
+Spawn prefab 3D item di posisi yang ditentukan API.
+
+
+Inspector fields:
+  GameObject itemPrefab    ← drag dari Assets/Art/Props/Prefabs/
+  int levelCount  = 3      ← jumlah level vertikal per rak
+  int itemsPerRow = 3      ← jumlah item sejajar per baris
+
+
+Logika posisi (world space dari API):
+  Level 1, Row 1, Col 1 → (posisiX,            posisiY,           posisiZ)
+  Level 1, Row 1, Col 2 → (posisiX + jarakH,   posisiY,           posisiZ)
+  Level 1, Row 1, Col 3 → (posisiX + jarakH×2, posisiY,           posisiZ)
+  Level 2, Row 1, Col 1 → (posisiX,            posisiY + jarakV,  posisiZ)
+  Level 3, Row 1, Col 1 → (posisiX,            posisiY + jarakV×2,posisiZ)
+
+
+Spawn method:
+  GameObject spawned = Instantiate(itemPrefab, transform);
+  spawned.transform.position = worldPos;   ← set eksplisit
+  spawned.transform.rotation = Quaternion.identity;
+
+
+Naming convention spawned objects:
+  P_JusJeruk_L1_R1_C1   (Level 1, Row 1, Column 1)
+  P_JusJeruk_L2_R1_C3   (Level 2, Row 1, Column 3)
+
+
+----------------------------------------------------------------
+  ListingBarang.cs  [MonoBehaviour — MainGameScene]
+----------------------------------------------------------------
+Attach ke GameObject ListingBarang di bawah Managers.
+Handle randomisasi objective dan matching item yang diambil player.
+
+
+Inspector fields:
+  ShoppingListUI shoppingListUI      ← drag ShoppingListUI component
+  int jumlahItemPerSesi = 5          ← jumlah item objective per sesi
+
+
+Public state:
+  List<GameItemData> itemAktif { get; private set; }
+                                     ← list item objective sesi ini
+
+
+Methods:
+  InitDariDatabase(List<GameItemData> semuaItem)
+    → dipanggil DataManager/APIManager setelah fetch selesai
+    → panggil RandomizeListBelanja()
+
+  CekDanCentangItem(string itemId) → bool
+    → MATCHING LOGIC: cek apakah itemId ada di itemAktif
+    → kalau tidak ada di itemAktif → return false
+    → kalau sudah di itemSudahDiambil → return false (double pick guard)
+    → kalau valid: tambah ke itemSudahDiambil,
+                   ShoppingListUI.SetCentang(itemId, true)
+    → kalau semua sudah diambil: log OnSemuaBarangTerkumpul()
+    → return true (ShelfUnit bisa lanjut panggil CartSystem.AddItem)
+
+  SudahDiambil(string itemId) → bool
+    → helper cek apakah item sudah diambil sebelumnya
+
+
+Internal:
+  RandomizeListBelanja()
+    → Fisher-Yates shuffle pool
+    → Take(jumlahItemPerSesi)
+    → ShoppingListUI.TampilkanList(itemAktif, GameSession.SelectedMode)
+
+  OnSemuaBarangTerkumpul()  [private]
+    → hanya Debug.Log — GameModeController handle win via OnCartChanged
+
+
+----------------------------------------------------------------
+  ShoppingListUI.cs  [MonoBehaviour — MainGameScene]
+----------------------------------------------------------------
+Attach ke GameObject ShoppingListUI (bagian dari Listing panel).
+Pure UI — render daftar objective dan centang item yang sudah diambil.
+
+
+Inspector fields:
+  GameObject itemRowPrefab    ← prefab satu baris listing
+  Transform  listContainer    ← parent container rows
+
+
+Row map: Dictionary<string, GameObject> keyed by item.id
+  → dipakai SetCentang() untuk lookup row tanpa loop
+
+
+Methods:
+  TampilkanList(List<GameItemData> items, GameMode mode)
+    → destroy semua child listContainer
+    → foreach item: Instantiate row, set label sesuai mode,
+      sembunyikan Centang child, simpan ke rowMap[item.id]
+
+  SetCentang(string itemId, bool aktif)
+    → lookup rowMap[itemId] → Find("Centang")?.SetActive(aktif)
+
+
+Label logic (GetLabel):
+  GameMode.Golek      → item.displayname  (riddle name)
+  GameMode.TimeAttack → item.namaItem + " " + item.varian
+                        (trim kalau varian null/empty)
+
+
+----------------------------------------------------------------
+  CartSystem.cs  [Singleton, DontDestroyOnLoad]
+----------------------------------------------------------------
+Single source of truth untuk semua item di keranjang player.
+
+PENTING: CartSystem TIDAK melakukan matching objective.
+Matching dilakukan ListingBarang.CekDanCentangItem() sebelum
+AddItem() dipanggil. CartSystem hanya menerima item yang sudah
+divalidasi.
+
+Dedup key: item.id (bukan namaItem — konsisten dengan
+ListingBarang.itemSudahDiambil HashSet yang juga keyed by id).
+
+
+Public API:
+  void AddItem(GameItemData item)     → tambah item; dedup by item.id;
+                                        kalau sudah ada, quantity++
+  float GetTotal()                    → total harga semua entry
+  int   GetItemCount()                → jumlah jenis item unik di cart
+  IReadOnlyList<CartEntry> GetEntries()
+  CartPayload BuildPayload(GameCashierData session, int totalObjective)
+                                      → terima session + jumlah total
+                                        objective sesi ini
+                                      → koin = 25 kalau entries.Count
+                                        >= totalObjective, else 0
+  void PrintCartSummary()             → debug log tabel cart
+
+
+Event:
+  Action OnCartChanged   ← Inventory.cs subscribe untuk refresh UI
+
+
+CartEntry:
+  GameItemData Item     { get; }
+  int          Quantity { get; set; }
+
+
+Cara panggil BuildPayload:
+  CartSystem.Instance.BuildPayload(sessionData, listingBarang.jumlahItemPerSesi)
+
+
+----------------------------------------------------------------
+  Inventory.cs  [Pure UI Layer, Singleton]
+----------------------------------------------------------------
+Tidak menyimpan data sendiri. Semua data dari CartSystem.
+
+
+  Subscribe: CartSystem.OnCartChanged → RefreshFromCart()
+  RefreshFromCart(): clear semua slot, re-render dari
+                     CartSystem.GetEntries()
+
+
+Bug yang sudah difix dari versi asal:
+  - GetComponentInChildren (singular) → GetComponentsInChildren (plural)
+    (bug asal: hanya mengambil 1 slot pertama)
+  - Stacking condition: currentAmount > maxStack
+    seharusnya < maxStack (logic terbalik)
+  - Loop kedua tidak pernah decrement `remaining`
+
+
+----------------------------------------------------------------
+  Slots.cs  [UI Slot per item di Inventory]
+----------------------------------------------------------------
+Menampilkan satu entry CartEntry di UI.
+
+
+  GameItemData holdItem       ← tipe diupdate dari ItemSO
+  icon guard: iconImage.enabled = false kalau icon null
+              (slot tetap fungsi meski icon belum di-assign)
+  amountTxt kosong kalau qty = 1 (lebih bersih untuk UI supermarket)
+
+
+----------------------------------------------------------------
+  IInteractable.cs  [Interface]
+----------------------------------------------------------------
+Harus diimplementasi oleh semua objek yang bisa di-interact.
+
+
+  void   Interact();
+  string DisplayName { get; }
+
+
+----------------------------------------------------------------
+  PlayerController.cs
+----------------------------------------------------------------
+Gerak player dengan joystick dan sistem raycast interact.
+
+
+  CharacterController untuk movement
+  Joystick input via PlayerInputControl (Input Action Asset)
+  Camera look via drag touch / mouse kanan (editor)
+  Jump dengan gravitasi manual
+
+
+Variabel penting:
+  float walkSpeed, turningSpeed, gravity
+  float lookSensitivity, maxPitchUp, maxPitchDown
+  LayerMask groundLayer
+  float tapMoveThreshold     ← batas pixel sebelum tap = drag
+  int   activeFingerId       ← tracking satu jari aktif
+
+
+TryInteract():
+  → raycast dari kamera saat player tap layar
+  → QueryTriggerInteraction.Collide supaya raycast kena isTrigger
+  → GetComponentInParent<IInteractable>()
+  → fallback log kalau tap ke lantai / objek non-interactable
+
+
+PLAYER KNOWN ISSUES (belum difix):
+  1. User harus tap layar di sebelah kanan dahulu untuk handle cam POV
+     karena joystick movement masih dihitung juga untuk handle POV sebagai activeFingerId
+  2. Interact UI (seperti interact di Genshin) untuk ambil item di layer PlayerCanvas
+     dan logicnya belum dikerjakan.
+
+
+----------------------------------------------------------------
+  GameMode.cs  [Enum — shared]
+----------------------------------------------------------------
+Enum yang dipakai GameSession, GameModeController, GameCashierData, CartPayload.
+Dipisah file sendiri supaya tidak ada circular dependency.
+
+
+  public enum GameMode { TimeAttack, Golek }
+
+
+----------------------------------------------------------------
+  GameSession.cs  [Static Class — in-memory, tidak persist]
+----------------------------------------------------------------
+Carrier data sesi game antar scene. Tidak di-attach ke GameObject.
+Mirip SessionCache tapi in-memory saja (tidak ke PlayerPrefs).
+Di-set di SelectMode sebelum LoadScene, dibaca GameModeController di MainGameScene.
+
+
+  static GameMode SelectedMode { get; set; }   ← default: TimeAttack
+
+
+  Reset()   → SelectedMode = TimeAttack
+              (opsional, bisa dipanggil SceneController)
+
+
+Penggunaan di SelectMode (via SceneController):
+  SceneController.LoadMainGameAsTimeAttack()
+    → GameSession.SelectedMode = GameMode.TimeAttack
+  SceneController.LoadMainGameAsGolek()
+    → GameSession.SelectedMode = GameMode.Golek
+
+
+----------------------------------------------------------------
+  GameModeController.cs  [MonoBehaviour — MainGameScene only]
+----------------------------------------------------------------
+Attach ke GameObject "GameModeController" di bawah Managers, MainGameScene.
+TIDAK DontDestroyOnLoad.
+
+
+Inspector fields:
+  float timeAttackDuration = 180f   ← durasi TA dalam detik (3 menit default)
+  int   targetItemCount    = 8      ← jumlah item untuk menang
+
+
+Public state (read-only):
+  GameMode CurrentMode
+  float    TimeRemaining
+  bool     IsGameOver
+  bool     IsGameWon
+  bool     IsTimerRunning
+
+
+Events:
+  Action<float> OnTimerTick        ← per frame, kirim sisa waktu (TA only)
+  Action        OnTimerExpired     ← sekali saat waktu habis (TA only)
+  Action        OnGameWin          ← semua target item terkumpul
+  Action        OnGameLose         ← waktu habis di TA
+  Action<int>   OnCartCountChanged ← setiap cart berubah, kirim count
+
+
+Flow:
+  Awake()  → baca GameSession.SelectedMode → set CurrentMode
+  Start()  → subscribe CartSystem.OnCartChanged
+           → kalau TA: StartCoroutine(TimerCoroutine())
+  Timer    → yield return null (per frame) + Time.deltaTime
+           → OnTimerTick?.Invoke(TimeRemaining)
+           → kalau habis: TriggerGameLose()
+  HandleCartChanged() → CheckWinCondition(cartCount)
+           → kalau >= targetItemCount: TriggerGameWin()
+
+
+Public helpers:
+  float  GetElapsedTime()    → timeAttackDuration - TimeRemaining
+  string GetModeString()     → "TimeAttack" | "Golek" (untuk POST)
+  float  GetWaktuSelesai()   → elapsed time (TA) | 0f (Golek)
+
+
+Catatan:
+  Timer pakai per-frame coroutine (bukan WaitForSeconds) supaya
+  TimeRemaining smooth dan bisa di-fire ke UIController tiap frame.
+  Time.timeScale = 0f (pause) otomatis menghentikan Time.deltaTime
+  sehingga timer ikut berhenti tanpa logika tambahan.
+
+
+----------------------------------------------------------------
+  UIController.cs  [MonoBehaviour — SelectMode DAN MainGameScene]
+----------------------------------------------------------------
+Attach ke GameObject "UIController" di bawah Managers.
+TIDAK DontDestroyOnLoad — instance berbeda per scene.
+
+
+Inspector fields (SelectMode):
+  [Header("SelectMode — PanelTutorial")]
+  GameObject panelTutorial          ← parent PanelTutorial
+  GameObject tutorialModeGolek      ← child ModeGolek (default off)
+  GameObject tutorialModeTimeAttack ← child ModeTimeAttack (default off)
+
+
+Inspector fields (MainGameScene):
+  [Header("PlayerCanvas — Always On")]
+  GameObject listing                ← daftar objective, aktif kedua mode
+  GameObject btnPause               ← aktif kedua mode
+
+
+  [Header("PlayerCanvas — TimeAttack Only")]
+  GameObject         timeAttackTimer ← panel timer, hanya TA
+  TextMeshProUGUI    timerText       ← TMPro text MM:SS di dalam panel timer
+
+
+  [Header("Pause")]
+  GameObject panelPause             ← muncul saat pause, default off
+
+
+SelectMode methods (OnClick targets):
+  ShowTutorialGolek()      → panelTutorial on, tutorialModeGolek on, TA off
+  ShowTutorialTimeAttack() → panelTutorial on, tutorialModeTimeAttack on, Golek off
+  HideTutorial()           → semua off
+
+
+MainGameScene flow:
+  Start() → FindFirstObjectByType<GameModeController>()   ← Unity 6
+          → ApplyModeUI(CurrentMode)
+             - Listing + BtnPause: SetActive(true)  ← always on
+             - TimeAttackTimer: SetActive(isTA)       ← TA only
+          → kalau TA: subscribe OnTimerTick → UpdateTimerDisplay()
+
+
+Listing toggle:
+  ListingItem()   [OnClick target BtnListing di PlayerCanvas]
+    → toggle _listingVisible bool
+    → listing.SetActive(_listingVisible)
+    → listing default on saat game mulai (_listingVisible = true)
+
+
+Pause:
+  TogglePause()
+    TimeAttack → Time.timeScale = 0f / 1f
+                 (coroutine timer berhenti otomatis karena deltaTime = 0)
+    Golek      → Time.timeScale tidak diubah (UI-only halt)
+    panelPause.SetActive(_isPaused)
+
+
+  ResumeGame()
+    → Time.timeScale = 1f (safe reset untuk kedua mode)
+    → panelPause.SetActive(false)
+
+
+
+
+================================================================
+  VARIABEL POST — KOORDINASI BACKEND
+================================================================
+
+
+Yang PERLU di-declare di backend (belum diimplementasi):
+
+
+Root level POST (snake_case — FINAL v0.6):
+  player_id       string    ← dari SessionCache.UserId
+  mode            string    "TimeAttack" atau "Golek"
+  waktu_selesai   float     detik; 0 kalau Golek
+  item_ditemukan  int       ← dari CartSystem.entries.Count
+  total_harga     float
+  koin            int       25 kalau semua objective terpenuhi, 0 kalau tidak
+  timestamp       string    "yyyy-MM-dd HH:mm:ss"
+  items           array
+
+
+Per item dalam array (snake_case — FINAL v0.6):
+  nama_item       string
+  kategori        string
+  varian          string
+  urutan_rak      int
+  harga           string    ← raw string dari API (konsisten GameItemData)
+  quantity        string    ← string
+
+
+RESOLVED:
+  ✅ Format identity player: user.id (int) dari response JTVHub
+     → disimpan sebagai string di SessionCache (session_user_id)
+  ✅ Content-Type login: x-www-form-urlencoded (bukan JSON)
+  ✅ Backend game POST: json_decode(file_get_contents('php://input'))
+
+
+
+
+================================================================
+  STATUS FILE
+================================================================
+
+
+SELESAI & SIAP PAKAI:
+  ✅ GameItemData.cs       field Raw + displayname + computed props
+  ✅ APIManager.cs         RemapJsonKeys lengkap termasuk display_name
+  ✅ ShelfUnit.cs          ShelfType naming Rak_01/02/03, Kulkas_01/02
+  ✅ ShelfManager.cs       auto-discover + matching via shelfId
+                           + panggil ListingBarang.InitDariDatabase(items)
+                           setelah semua ShelfUnit dapat data API
+  ✅ ItemSpawner.cs        spawn 3D prefab dari koordinat API
+  ✅ CartSystem.cs         dedup by item.id, BuildPayload(session, totalObjective),
+                           koin logic (25 kalau semua objective terpenuhi, else 0)
+  ✅ ListingBarang.cs      randomize objective, CekDanCentangItem by item.id,
+                           double-pick guard via itemSudahDiambil HashSet
+                           + auto-find ShoppingListUI jika reference null
+  ✅ ShoppingListUI.cs     fixed-slot system (labelSlots[0-4] = TMP List1-List5,
+                           centangSlots[0-4] = GameObject List1Selesai-List5Selesai)
+                           render label per GameMode, SetCentang by item.id
+                           centang hidden via Awake() tanpa tunggu TampilkanList
+  ✅ ItemInteractUI.cs     Genshin-style proximity interact UI, 1 item per rak
+                           Hierarchy: ItemInteractUI → Panel → ItemDiambil (Button)
+                                      └── [TMP] teks tombol = nama item
+                           Label = displayname (Golek) / namaItem+varian (TimeAttack)
+                           BtnAmbil.interactable = false kalau SudahDiambil()
+                           Dipanggil ShelfUnit.SetPlayerInRange() — 1 instance shared
+                           Inspector: Btn Ambil → ItemDiambil, Listing Barang → ListingBarang GO
+                           Patch ShelfUnit: tambah field public ItemInteractUI itemInteractUI
+                           + call ShowForShelf(this, currentItemData) / Hide() di SetPlayerInRange()
+  ✅ Inventory.cs          pure UI layer, subscribe OnCartChanged
+  ✅ Slots.cs              tipe GameItemData, icon null guard
+  ✅ ProximityDetector.cs  trigger in/out → SetPlayerInRange
+  ✅ PlayerController.cs   movement + raycast interact + Interact Button flow
+  ✅ IInteractable.cs      interface Interact() + DisplayName
+  ✅ SessionCache.cs       PlayerPrefs session, expiry Unix timestamp
+  ✅ AuthManager.cs        POST login JTVHub, parse response, save session
+  ✅ SceneController.cs    navigasi scene + CheckSessionAndRoute + Logout
+                           + LoadMainGameAsTimeAttack() + LoadMainGameAsGolek()
+  ✅ GameMode.cs           enum shared (TimeAttack, Golek)
+  ✅ GameSession.cs        static class, SelectedMode carrier antar scene
+  ✅ GameModeController.cs rules, timer coroutine, win/lose events
+  ✅ UIController.cs       SelectMode panel logic + MainGameScene PlayerCanvas toggle
+                           + ListingItem() toggle on/off listing panel
+  ✅ GameCashierData.cs       data sesi untuk submit kasir
+  ✅ CashierController.cs     POST logic, GameConditionUI panel control,
+                              OnSubmitKasirPressed, PostTimerExpiredAndReturn,
+                              HandleTimerExpired, ShowPanel parent-first pattern
+  ✅ CashierTriggerZone.cs    bridge isTrigger 3D Env -> CashierController,
+                              dipisah karena OnTriggerEnter tidak fire dari Canvas GO
+
+BISA DIHAPUS:
+  🗑️  GameManager.cs          tidak jadi dibuat — fungsinya masuk SceneController
+
+
+================================================================
+  CATATAN TEKNIS PENTING
+================================================================
+
+
+1. JsonUtility tidak support:
+     - Root-level JSON array → harus di-wrap dulu
+     - Custom key mapping → harus pakai RemapJsonKeys() manual
+     - [NonSerialized] fields di-skip otomatis ✓
+     - Nested object HARUS semua class [System.Serializable]
+       kalau tidak, nested object null setelah parse
+
+
+2. Newtonsoft.Json tidak dipakai karena butuh explicit reference
+   di .asmdef file. Tanpa itu compile error muncul meski package
+   sudah ter-install. Solusi: pure string replacement di
+   RemapJsonKeys() — zero dependency.
+
+
+3. Field numerik dari API adalah JSON string, bukan JSON number.
+   JsonUtility tidak bisa auto-convert → semua disimpan sebagai
+   string dengan suffix Raw, di-parse manual pakai
+   CultureInfo.InvariantCulture supaya desimal selalu "." bukan ","
+   regardless locale device Android.
+
+
+4. PlayerPrefs menyimpan plain text di Android.
+   Jangan simpan password. Token server-generated = aman.
+
+
+5. ShelfUnit.Start() jalan sebelum API fetch selesai (async).
+   Fallback Inspector data bersifat sementara, di-override
+   SetItemData() begitu ShelfManager selesai.
+
+
+6. CartSystem dan APIManager pakai DontDestroyOnLoad → persist
+   antar scene. Pastikan tidak ada duplicate instance saat
+   scene reload.
+
+
+7. urutan_rak range 0–79 (80 item, 1 item 1 rak). Pastikan tidak
+   ada ShelfUnit di scene yang shelfId-nya dibiarkan default 0
+   tanpa sengaja — bisa terjadi false match ke item rak pertama.
+
+
+8. WWWForm di Unity otomatis set header:
+    Content-Type: application/x-www-form-urlencoded
+    Tidak perlu set manual. Dipakai AuthManager untuk POST login.
+
+
+9. device_uuid dan device_name di AuthManager di-hardcode:
+    device_uuid = "67", device_name = "yes"
+    Alasan: bypass kebutuhan SystemInfo.deviceUniqueIdentifier
+    yang memerlukan permission Android lebih dalam.
+    Server menerima nilai ini tapi tidak kritis untuk game logic.
+
+
+10. ListingBarang HARUS ada di hierarchy Managers (MainGameScene).
+    ShelfManager.OnItemsFetched() memanggil ListingBarang.InitDariDatabase()
+    via FindFirstObjectByType<> setelah semua ShelfUnit dapat data API.
+    Kalau ListingBarang tidak ada di hierarchy → ShoppingListUI tidak pernah
+    di-refresh → label tetap "New Text" default.
+    Inspector wajib: drag ShoppingListUI component ke field shoppingListUI.
+
+
+11. ShoppingListUI pakai fixed-slot (bukan dynamic instantiate prefab).
+    labelSlots[0–4] → drag komponen TextMeshProUGUI (bukan GameObject)
+    centangSlots[0–4] → drag GameObject List1Selesai–List5Selesai
+    Slot kosong (items < 5): text dikosongkan, GameObject tetap aktif.
+
+
+12. ItemInteractUI adalah 1 instance shared di PlayerCanvas.
+    Semua ShelfUnit (79 total) drag instance yang sama ke field itemInteractUI.
+    Script di-attach di GameObject ItemInteractUI (bukan di Managers).
+    Default: SetActive(false) — muncul hanya saat player masuk proximity zone.
+    Hierarchy: ItemInteractUI → Panel → ItemDiambil (Button) → [TMP]
+    TMP di dalam Button diambil otomatis via GetComponentInChildren di Awake().
+    ShelfUnit wajib dipatch: tambah field + call ShowForShelf/Hide di SetPlayerInRange().
+
+
+13. display_name (variable serverside/backend), displayname (variable script local), dan
+    DisplayName (unity syntax) berbeda satu sama lainnya. Sebelumnya untuk GameMode Golek:
+    displayName tidak digunakan karena syntax ambiguity.
+
+
+================================================================
+  END OF DOCUMENT — GolakGolek Beta v0.9 Juni 2026
+  Update: 11 Juni 2026
+================================================================
