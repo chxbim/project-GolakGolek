@@ -25,7 +25,7 @@ public class GameModeController : MonoBehaviour
 
     [Header("Time Attack Settings")]
     [Tooltip("Durasi waktu mode Time Attack dalam detik.")]
-    [SerializeField] private float timeAttackDuration = 90f;   // 1.5 menit default
+    [SerializeField] private float timeAttackDuration = 120f;   // 2 menit default
 
     [Header("Target Items")]
     [Tooltip("Jumlah item yang harus dikumpulkan player untuk menang.")]

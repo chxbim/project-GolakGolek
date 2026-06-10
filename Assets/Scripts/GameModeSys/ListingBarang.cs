@@ -1,9 +1,3 @@
-//manggil variabel item dari GameItemData
-//semua barang punya display name.
-//randomize?
-//[namaItem][varian]: GameMode TimeAttacks
-//[displayName]: GameMode Golek
-
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -19,9 +13,22 @@ public class ListingBarang : MonoBehaviour
     public List<GameItemData> itemAktif { get; private set; } = new();
     private HashSet<string> itemSudahDiambil = new();
 
-    // Dipanggil dari DataManager/APIManager setelah fetch selesai
+    // Dipanggil ShelfManager setelah fetch + distribute ke ShelfUnit selesai
     public void InitDariDatabase(List<GameItemData> semuaItem)
     {
+        if (semuaItem == null || semuaItem.Count == 0)
+        {
+            Debug.LogError("[ListingBarang] InitDariDatabase dipanggil dengan list kosong!");
+            return;
+        }
+
+        if (shoppingListUI == null)
+        {
+            Debug.LogError("[ListingBarang] shoppingListUI belum di-assign di Inspector!");
+            return;
+        }
+
+        Debug.Log($"[ListingBarang] InitDariDatabase: {semuaItem.Count} item masuk, ambil {jumlahItemPerSesi}");
         RandomizeListBelanja(semuaItem);
     }
 
@@ -41,11 +48,10 @@ public class ListingBarang : MonoBehaviour
 
         itemAktif = pool.Take(jumlahItemPerSesi).ToList();
 
-        // Ambil mode langsung dari GameSession — sumber of truth nya
+        Debug.Log($"[ListingBarang] Mode: {GameSession.SelectedMode} — memanggil TampilkanList dengan {itemAktif.Count} item");
         shoppingListUI.TampilkanList(itemAktif, GameSession.SelectedMode);
     }
 
-    // Dipanggil ShelfUnit saat player ambil barang
     public bool CekDanCentangItem(string itemId)
     {
         var item = itemAktif.FirstOrDefault(i => i.id == itemId);
@@ -67,6 +73,5 @@ public class ListingBarang : MonoBehaviour
     private void OnSemuaBarangTerkumpul()
     {
         Debug.Log("[ListingBarang] Semua barang terkumpul!");
-        // GameModeController akan handle win condition via CartSystem
     }
 }
