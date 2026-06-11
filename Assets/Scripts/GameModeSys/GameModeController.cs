@@ -41,7 +41,7 @@ public class GameModeController : MonoBehaviour
     public bool IsGameWon { get; private set; }
 
     // Convenience: apakah timer sedang berjalan
-    public bool IsTimerRunning => CurrentMode == GameMode.TimeAttack
+    public bool IsTimerRunning => CurrentMode == GameMode.time_attack
                                && !IsGameOver;
 
     // ----------------------------------------------------------------
@@ -96,7 +96,7 @@ public class GameModeController : MonoBehaviour
         }
 
         // Mulai timer hanya kalau mode TimeAttack
-        if (CurrentMode == GameMode.TimeAttack)
+        if (CurrentMode == GameMode.time_attack)
         {
             _timerCoroutine = StartCoroutine(TimerCoroutine());
         }
@@ -199,7 +199,7 @@ public class GameModeController : MonoBehaviour
     // ("TimeAttack" atau "Golek")
     public string GetModeString()
     {
-        return CurrentMode == GameMode.TimeAttack ? "TimeAttack" : "Golek";
+        return CurrentMode == GameMode.time_attack ? "time_attack" : "golek";
     }
 
     // Kembalikan waktuSelesai untuk CartPayload:
@@ -207,7 +207,7 @@ public class GameModeController : MonoBehaviour
     //   Golek      → 0 (tidak ada timer)
     public float GetWaktuSelesai()
     {
-        return CurrentMode == GameMode.TimeAttack ? GetElapsedTime() : 0f;
+        return CurrentMode == GameMode.time_attack ? GetElapsedTime() : 0f;
     }
 
     // ----------------------------------------------------------------

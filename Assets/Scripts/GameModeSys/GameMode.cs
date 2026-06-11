@@ -4,6 +4,6 @@
 
 public enum GameMode
 {
-    TimeAttack,
-    Golek
+    time_attack,
+    golek
 }

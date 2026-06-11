@@ -7,11 +7,11 @@ public static class GameSession
 {
     // Mode yang dipilih player di SelectMode
     // Default TimeAttack supaya tidak null kalau somehow terlewat di-set
-    public static GameMode SelectedMode { get; set; } = GameMode.TimeAttack;
+    public static GameMode SelectedMode { get; set; } = GameMode.time_attack;
 
     // Reset saat player kembali ke SelectMode (opsional, bisa dipanggil SceneController)
     public static void Reset()
     {
-        SelectedMode = GameMode.TimeAttack;
+        SelectedMode = GameMode.time_attack;
     }
 }

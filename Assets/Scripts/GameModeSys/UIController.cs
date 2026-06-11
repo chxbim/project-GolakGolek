@@ -76,7 +76,7 @@ public class UIController : MonoBehaviour
         {
             ApplyModeUI(_gameModeController.CurrentMode);
 
-            if (_gameModeController.CurrentMode == GameMode.TimeAttack)
+            if (_gameModeController.CurrentMode == GameMode.time_attack)
                 _gameModeController.OnTimerTick += UpdateTimerDisplay;
         }
 
@@ -123,7 +123,7 @@ public class UIController : MonoBehaviour
         if (listing != null) listing.SetActive(true);
         if (btnPause != null) btnPause.SetActive(true);
 
-        bool isTA = mode == GameMode.TimeAttack;
+        bool isTA = mode == GameMode.time_attack;
         if (timeAttackTimer != null) timeAttackTimer.SetActive(isTA);
 
         if (isTA && timerText != null)
@@ -176,7 +176,7 @@ public class UIController : MonoBehaviour
         _isPaused = !_isPaused;
 
         if (_gameModeController != null &&
-            _gameModeController.CurrentMode == GameMode.TimeAttack)
+            _gameModeController.CurrentMode == GameMode.time_attack) 
         {
             Time.timeScale = _isPaused ? 0f : 1f;
         }
