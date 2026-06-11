@@ -73,13 +73,13 @@ public class SceneLoader : MonoBehaviour
 
     public void LoadMainGameAsTimeAttack()
     {
-        GameSession.SelectedMode = GameMode.TimeAttack;
+        GameSession.SelectedMode = GameMode.time_attack;
         SceneManager.LoadScene("MainGameScene");
     }
 
     public void LoadMainGameAsGolek()
     {
-        GameSession.SelectedMode = GameMode.Golek;
+        GameSession.SelectedMode = GameMode.golek;
         SceneManager.LoadScene("MainGameScene");
     }
 

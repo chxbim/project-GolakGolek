@@ -6,7 +6,7 @@ public class GameItemData
 {
     public string id;
     public string namaItem;
-    public string displayName;          // riddle name untuk mode Golek ← display_name
+    public string displayname;          // riddle name untuk mode Golek ← display_name
     public string kategoriBarang;
     public string varian;
     public string hargaRaw;

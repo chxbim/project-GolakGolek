@@ -9,7 +9,7 @@ using System;
 public class GameCashierData
 {
     public string playerId;
-    public string mode;           // "TimeAttack" | "Golek"
+    public string mode;           // "time_attack" | "golek"
     public float waktuSelesai;    // detik elapsed; 0 kalau mode Golek
     public int itemDitemukan;     // diisi dari CartSystem.GetEntries().Count saat submit
     public string timestamp;      // diisi saat BuildPayload dipanggil
