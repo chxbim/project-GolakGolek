@@ -1980,9 +1980,9 @@ Transform:
   m_Children:
   - {fileID: 1968236516}
   - {fileID: 31752209}
-  - {fileID: 1142206230}
   - {fileID: 1644213919}
   - {fileID: 1518866740}
+  - {fileID: 1795822154}
   - {fileID: 1297647493}
   - {fileID: 1421244660}
   - {fileID: 1762813579}
@@ -2022,7 +2022,7 @@ Transform:
   m_Children:
   - {fileID: 1786395304}
   - {fileID: 2402017}
-  m_Father: {fileID: 406654260}
+  m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &75355031
 MonoBehaviour:
@@ -6487,13 +6487,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 273203029}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.99, y: 5.73, z: -71.7}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -21.11, y: 5.73, z: -7.97}
   m_LocalScale: {x: 7, y: 9, z: 5.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 885245261}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!114 &273203031
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10825,7 +10825,6 @@ Transform:
   m_Children:
   - {fileID: 283973917}
   - {fileID: 1300814149}
-  - {fileID: 75355030}
   m_Father: {fileID: 1542006760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &406654261
@@ -30939,59 +30938,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1140873034}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1142206229
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1142206230}
-  - component: {fileID: 1142206231}
-  m_Layer: 0
-  m_Name: CashierController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1142206230
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1142206229}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1024.1467, y: 430.89563, z: 1161.3898}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 68140521}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1142206231
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1142206229}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18867c7dab20a17448dfbce1a48b04ec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CashierController
-  btnSubmitKasir: {fileID: 0}
-  AreaKasir: {fileID: 0}
-  gameConditionUI: {fileID: 0}
-  gameKalah: {fileID: 0}
-  gameMenang: {fileID: 0}
-  gameIncomplete: {fileID: 0}
-  sceneLoader: {fileID: 0}
-  joystick: {fileID: 0}
-  btnPause: {fileID: 0}
 --- !u!1001 &1142445343
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33673,7 +33619,7 @@ Transform:
   m_GameObject: {fileID: 1300814148}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 22.48, y: 5.73, z: -8.37}
+  m_LocalPosition: {x: 22.48, y: 5.73, z: -8.21}
   m_LocalScale: {x: 7, y: 9, z: 6}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -33719,7 +33665,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1300814148}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -39358,6 +39304,7 @@ Transform:
   - {fileID: 488581634}
   - {fileID: 1133672093}
   - {fileID: 212815235}
+  - {fileID: 75355030}
   - {fileID: 406654260}
   - {fileID: 674082292}
   - {fileID: 776959468}
@@ -40924,7 +40871,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1619249451
 RectTransform:
   m_ObjectHideFlags: 0
@@ -44645,7 +44592,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1768320692
 RectTransform:
   m_ObjectHideFlags: 0
@@ -45187,6 +45134,59 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1794555322}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1795822153
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1795822154}
+  - component: {fileID: 1795822155}
+  m_Layer: 0
+  m_Name: CashierController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1795822154
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1795822153}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 885.73364, y: -1.53, z: 1482.1475}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 68140521}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1795822155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1795822153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18867c7dab20a17448dfbce1a48b04ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CashierController
+  btnSubmitKasir: {fileID: 1798690574}
+  AreaKasir: {fileID: 1114487042}
+  gameConditionUI: {fileID: 1159348071}
+  gameKalah: {fileID: 2111226114}
+  gameMenang: {fileID: 1756347617}
+  gameIncomplete: {fileID: 1619249450}
+  sceneLoader: {fileID: 1421244661}
+  joystick: {fileID: 1261013707}
+  btnPause: {fileID: 1817707062}
 --- !u!1 &1798690574
 GameObject:
   m_ObjectHideFlags: 0
@@ -45270,7 +45270,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1142206231}
+      - m_Target: {fileID: 1795822155}
         m_TargetAssemblyTypeName: CashierController, Assembly-CSharp
         m_MethodName: OnSubmitKasirPressed
         m_Mode: 1
@@ -49595,13 +49595,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CashierController
   btnSubmitKasir: {fileID: 1798690574}
-  AreaKasir: {fileID: 0}
+  AreaKasir: {fileID: 1114487042}
   gameConditionUI: {fileID: 1159348071}
   gameKalah: {fileID: 2111226114}
   gameMenang: {fileID: 1756347617}
   gameIncomplete: {fileID: 1619249450}
   sceneLoader: {fileID: 1421244661}
-  joystick: {fileID: 0}
+  joystick: {fileID: 1261013707}
   btnPause: {fileID: 0}
 --- !u!114 &1919840219
 MonoBehaviour:
@@ -53095,7 +53095,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2111226115
 RectTransform:
   m_ObjectHideFlags: 0
