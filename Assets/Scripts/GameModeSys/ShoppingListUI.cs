@@ -89,8 +89,8 @@ public class ShoppingListUI : MonoBehaviour
     {
         return mode switch
         {
-            GameMode.Golek => item.displayname,
-            GameMode.TimeAttack => string.IsNullOrEmpty(item.varian)
+            GameMode.golek => item.displayname,
+            GameMode.time_attack => string.IsNullOrEmpty(item.varian)
                                     ? item.namaItem
                                     : $"{item.namaItem} {item.varian}",
             _ => item.namaItem
