@@ -289,7 +289,6 @@ public class CashierController : MonoBehaviour
 
         // Freeze player input — sama seperti PausePanelUI
         SetActive(joystick, false);
-        SetActive(btnPause, false);
 
         Debug.Log($"[Kasir] ShowPanel → {panel.name} | input player difreeze.");
     }
