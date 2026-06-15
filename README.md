@@ -6,7 +6,7 @@ To-do:
 3. Player movement n cam; done.
 4. Pause Feature; done.
 5. GameMode logic; done -- gnti enum dri camelCase ke snake_case.
-6. CashierSys n integrate GameConditionUI di gameKalah dan time_attack done, sisanya belom (baik di UI atau logic side).
+6. CashierSys n GameConditionUI gameKalah + gameMenang done, gameIncomplete in progress. 
 7. ProfileScene; UI done, logic (ProfileController) belom.
 
 next up priority: 
