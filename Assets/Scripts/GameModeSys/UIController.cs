@@ -61,6 +61,9 @@ public class UIController : MonoBehaviour
 
     private void Start()
     {
+
+        Debug.Log($"BtnPause active: {btnPause.activeSelf}, inHierarchy: {btnPause.activeInHierarchy}");
+
         // --- SelectMode setup ---
         if (panelTutorial != null)
         {
@@ -81,6 +84,7 @@ public class UIController : MonoBehaviour
         }
 
         if (panelPause != null) panelPause.SetActive(false);
+        Debug.Log($"BtnPause active: {btnPause.activeSelf}, inHierarchy: {btnPause.activeInHierarchy}");
     }
 
     private void OnDestroy()
