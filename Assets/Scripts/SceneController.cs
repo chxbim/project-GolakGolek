@@ -93,4 +93,9 @@ public class SceneLoader : MonoBehaviour
         SessionCache.ClearSession();
         SceneManager.LoadScene("HomeScene");
     }
+
+    public void Kepencet()
+    {
+        Debug.Log("KEPENCET");
+    }
 }
