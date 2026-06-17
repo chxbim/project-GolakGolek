@@ -133,6 +133,7 @@ public class AuthManager : MonoBehaviour
         SessionCache.SaveSession(
             userId: response.user.id.ToString(),
             userName: response.user.name,
+            userEmail: response.user.email,
             accessToken: response.access_token,
             refreshToken: response.refresh_token,
             expiresInSeconds: response.expires_in

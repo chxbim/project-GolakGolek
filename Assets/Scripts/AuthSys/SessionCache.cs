@@ -10,6 +10,7 @@ public static class SessionCache
     // ── Keys ────────────────────────────────────────────────────
     private const string KEY_USER_ID = "session_user_id";
     private const string KEY_USER_NAME = "session_user_name";
+    private const string KEY_USER_EMAIL = "session_user_email";
     private const string KEY_ACCESS_TOKEN = "session_access_token";
     private const string KEY_REFRESH_TOKEN = "session_refresh_token";
     private const string KEY_EXPIRY = "session_expiry";       // Unix timestamp (string)
@@ -17,6 +18,7 @@ public static class SessionCache
     // ── Properties ──────────────────────────────────────────────
     public static string UserId => PlayerPrefs.GetString(KEY_USER_ID, "");
     public static string UserName => PlayerPrefs.GetString(KEY_USER_NAME, "");
+    public static string UserEmail => PlayerPrefs.GetString(KEY_USER_EMAIL, "");
     public static string AccessToken => PlayerPrefs.GetString(KEY_ACCESS_TOKEN, "");
     public static string RefreshToken => PlayerPrefs.GetString(KEY_REFRESH_TOKEN, "");
 
@@ -26,7 +28,7 @@ public static class SessionCache
     /// Simpan session setelah login berhasil.
     /// expiresInSeconds diambil langsung dari field "expires_in" di response JSON.
     /// </summary>
-    public static void SaveSession(string userId, string userName,
+    public static void SaveSession(string userId, string userName, string userEmail,
                                    string accessToken, string refreshToken,
                                    long expiresInSeconds)
     {
@@ -34,6 +36,7 @@ public static class SessionCache
 
         PlayerPrefs.SetString(KEY_USER_ID, userId);
         PlayerPrefs.SetString(KEY_USER_NAME, userName);
+        PlayerPrefs.SetString(KEY_USER_EMAIL, userEmail);
         PlayerPrefs.SetString(KEY_ACCESS_TOKEN, accessToken);
         PlayerPrefs.SetString(KEY_REFRESH_TOKEN, refreshToken);
         PlayerPrefs.SetString(KEY_EXPIRY, expiryTimestamp.ToString());
@@ -73,6 +76,7 @@ public static class SessionCache
     {
         PlayerPrefs.DeleteKey(KEY_USER_ID);
         PlayerPrefs.DeleteKey(KEY_USER_NAME);
+        PlayerPrefs.DeleteKey(KEY_USER_EMAIL);
         PlayerPrefs.DeleteKey(KEY_ACCESS_TOKEN);
         PlayerPrefs.DeleteKey(KEY_REFRESH_TOKEN);
         PlayerPrefs.DeleteKey(KEY_EXPIRY);
