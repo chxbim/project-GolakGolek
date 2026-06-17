@@ -134,22 +134,23 @@ public class CashierController : MonoBehaviour
         }
 
         bool semuaTerkumpul = CartSystem.Instance.GetItemCount() >= _listingBarang.jumlahItemPerSesi;
-        bool isGolek = _gameModeController != null
-                    && _gameModeController.CurrentMode == GameMode.golek;
 
         Debug.Log($"[Kasir] Submit | SemuaTerkumpul={semuaTerkumpul} | Mode={_gameModeController?.CurrentMode}");
 
-        if (isGolek && !semuaTerkumpul)
+        // Submit manual sebelum semua item terkumpul — berlaku untuk KEDUA mode.
+        // (Golek: tidak ada timer, jadi ini satu-satunya jalur incomplete.
+        //  TimeAttack: ini hanya tercapai lewat klik manual selagi waktu masih ada —
+        //  timer habis ditangani independen lewat HandleTimerExpired(), bukan di sini.)
+        if (!semuaTerkumpul)
         {
-            Debug.Log("[Kasir] Golek incomplete — tidak POST.");
+            Debug.Log("[Kasir] Submit incomplete — tidak POST.");
             SetActive(btnSubmitKasir, false);
             SetActive(AreaKasir, false);
             ShowPanel(gameIncomplete);
             return;
         }
 
-        string outcome = semuaTerkumpul ? "menang" : "kalah_incomplete_ta";
-        StartCoroutine(PostAndShowResult(outcome));
+        StartCoroutine(PostAndShowResult("menang"));
     }
 
     // ── OnTimerExpired handler ────────────────────────────────
