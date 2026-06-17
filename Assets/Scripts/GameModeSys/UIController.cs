@@ -177,7 +177,9 @@ public class UIController : MonoBehaviour
 
     public void TogglePause()
     {
+
         _isPaused = !_isPaused;
+        Debug.Log($"_isPaused: {_isPaused}");
 
         if (_gameModeController != null &&
             _gameModeController.CurrentMode == GameMode.time_attack) 
@@ -187,6 +189,7 @@ public class UIController : MonoBehaviour
 
         if (panelPause != null) panelPause.SetActive(_isPaused);
     }
+
 
     public void ResumeGame()
     {
